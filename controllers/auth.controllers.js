@@ -12,11 +12,10 @@ const erService = require('../models/erService');
 
 //Đăng nhập
 const login = async (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
+    const username = req.querry.username;
+    const password = req.querry.password;
     
     if (!username || !password) {
-        console.log(req.body);
         return res.status(BAD_REQUEST).json({ success: 0 });
     } 
     
