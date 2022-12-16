@@ -170,12 +170,12 @@ const letServiceProduct = async (req,res) => {
 
 //Lấy ra các sản phẩm đang được triệu hồi của 1 đại lý
 const getReCallingProduct = async (req,res) => {
-    if (!req.body.id_user) {
+    if (!req.querry.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const recallProduct = await erRecall.findOne({id_user: req.body.id_user});
+        const recallProduct = await erRecall.findOne({id_user: req.querry.id_user});
         let list = new Array;
         for (let i = 0; i < recallProduct.length; i++) {
             const _product = product.findById(recallProduct[i].id_product);
@@ -298,12 +298,12 @@ const returnProductCustomer = async (req,res) => {
 
 //Lấy ra các sản phẩm cũ cần trả lại cơ sở sản xuất của 1 đại lý
 const getBackProduction = async (req,res) => {
-    if (!req.body.id_user) {
+    if (!req.querry.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const product_backproduction = await backProduction.find({id_user: req.body.id_user});
+        const product_backproduction = await backProduction.find({id_user: req.querry.id_user});
         let list = new Array;
         for (let i = 0; i < product_backproduction.length; i++) {
             const _product = product.findById(product_backproduction[i].id_product);
@@ -346,12 +346,12 @@ const getNewProducts = async (req,res) => {
 
 //Nhận sản phẩm mới từ cơ sở sản xuất
 const takeNewProducts = async (req,res) => {
-    if (!req.querry.id_product) {
+    if (!req.body.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        await backAgent.findByIdAndUpdate({id_product: req.querry.id_product}, {agent_status: 'Đã nhận'});
+        await backAgent.findByIdAndUpdate({id_product: req.body.id_product}, {agent_status: 'Đã nhận'});
         await product.findByIdAndUpdate({_id: req.body.id_product}, {status: "back_agent"})
 
         return res.json({
@@ -389,12 +389,12 @@ const getFixedProducts = async (req,res) => {
 
 //Nhận sản phẩm đã bảo hành xong từ trung tâm bảo hành của 1 đại lý
 const takeFixedProducts = async (req,res) => {
-    if (!req.querry.id_product) {
+    if (!req.body.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        await svFixed.findByIdAndUpdate({id_product: req.querry.id_product}, {agent_status: 'Đã nhận'});
+        await svFixed.findByIdAndUpdate({id_product: req.body.id_product}, {agent_status: 'Đã nhận'});
         await product.findByIdAndUpdate({_id: req.body.id_product}, {status: "sv_fixed"})
 
         return res.json({
