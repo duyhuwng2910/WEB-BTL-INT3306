@@ -14,8 +14,8 @@ const { user } = require('../models/user');
 const { sortFunction } = require('./auth.controllers');
 const { UNKNOWN, BAD_REQUEST } = require('../config/HttpStatusCodes');
 
-//Lấy ra tất cả sản phẩm mới nhập về ở trong kho
-const getAllNewProducts = async (req,res) => {
+//Lấy ra tất cả sản phẩm mới nhập về ở trong kho ****************
+const getNewProductIsConfirm = async (req,res) => {
     if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
@@ -24,7 +24,7 @@ const getAllNewProducts = async (req,res) => {
         const agent_product = await backAgent.find({id_ag: req.query.id_user, agent_status: 'Đã nhận'});
         let list = new Array;
         for (let i = 0; i < agent_product.length; i++) {
-            const _product = product.findById(agent_product[i].id_product);
+            const _product = await product.findOne({_id: agent_product[i].id_product, status: "back_agent"});
             list.push(_product);
         }
 
@@ -38,7 +38,7 @@ const getAllNewProducts = async (req,res) => {
     }
 }
 
-//Trả lại sản phẩm cho cơ sở sản xuất do lâu không bán được
+//Trả lại sản phẩm cho cơ sở sản xuất do lâu không bán được ********************************
 const backToProduction = async (req,res) => {
     if (!req.body.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
@@ -48,10 +48,10 @@ const backToProduction = async (req,res) => {
         const agent_product = await backAgent.findOne({id_product: req.body.id_product});
         await new backProduction({
             id_product: agent_product.id_product,
-            id_user: agent_product.id_user, 
+            id_user: agent_product.id_pr, 
             status: "Chưa nhận"
         }).save();
-        await product.findOneAndUpdate({_id: req.body.id_product}, {status: 'back_production'});
+        await product.findOneAndUpdate({_id: req.body.id_product}, {status: 'back_production', namespace: "Cơ sở sản xuất"} );
         return res.json({
             success: 1
         })
@@ -61,17 +61,17 @@ const backToProduction = async (req,res) => {
     }
 }
 
-//Bán sản phẩm cho khách hàng
+//Bán sản phẩm cho khách hàng **************************
 const letProductSold = async (req,res) => {
     if (!req.body.id_product || !req.body.customer || !req.body.address || !req.body.phoneNumber) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const agent_product = await backAgent.findOne({_id: req.body.id_product});
+        const agent_product = await backAgent.findOne({id_product: req.body.id_product});
         await new sold({
             id_product: agent_product.id_product,
-            id_user: agent_product.id_user, //id đại lý
+            id_user: agent_product.id_ag, //id đại lý
             customer: req.body.customer,
             phoneNumber: req.body.phoneNumber,
             address: req.body.address
@@ -87,7 +87,7 @@ const letProductSold = async (req,res) => {
     }
 }
 
-//Lấy ra tất cả sản phẩm đã bán (chỉ gồm các sản phẩm đang ở trong tay khách hàng) của 1 đại lý
+//Lấy ra tất cả sản phẩm đã bán (chỉ gồm các sản phẩm đang ở trong tay khách hàng) của 1 đại lý ***********
 const listSold = async (req,res) => {
     if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
@@ -98,10 +98,10 @@ const listSold = async (req,res) => {
         const product_sold = await sold.find({id_user: req.query.id_user});
         const product_return = await svReturn.find({id_user: req.query.id_user});
         for (let i = 0; i < product_sold.length; i++) {
-            list.push(await product.findById(product_sold[i].id_product));
+            list.push(await product.findOne({_id:product_sold[i].id_product, status: "sold"}));
         }
         for (let i = 0; i < product_return.length; i++) {
-            list.push(await product.findById(product_return[i].id_product));
+            list.push(await product.findOne({_id:product_return[i].id_product, status: "sv_return"}));
         }
         return res.json({
             success: 1,
@@ -322,7 +322,7 @@ const getBackProduction = async (req,res) => {
 }
 
 //Lấy ra các sản phẩm mới về của 1 đại lý
-const getNewProducts = async (req,res) => {
+const getNewProductNonConfirm = async (req,res) => {
     if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
@@ -495,7 +495,7 @@ const staticByYearSoldProduct = async(req,res) => {
 }
 
 module.exports = {
-    getAllNewProducts,
+    getNewProductIsConfirm,
     letProductSold,
     backToProduction,
     listSold,
@@ -507,7 +507,7 @@ module.exports = {
     returnProductCustomer,
     takeRecallProduct,
     getBackProduction,
-    getNewProducts,
+    getNewProductNonConfirm,
     takeNewProducts,
     staticByMonthSoldProduct,
     staticByYearSoldProduct,
