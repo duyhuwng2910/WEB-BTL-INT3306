@@ -16,12 +16,12 @@ const { UNKNOWN, BAD_REQUEST } = require('../config/HttpStatusCodes');
 
 //Lấy ra tất cả sản phẩm mới nhập về ở trong kho
 const getAllNewProducts = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const agent_product = await backAgent.find({id_user: req.querry.id_user, agent_status: 'Đã nhận'});
+        const agent_product = await backAgent.find({id_ag: req.query.id_user, agent_status: 'Đã nhận'});
         let list = new Array;
         for (let i = 0; i < agent_product.length; i++) {
             const _product = product.findById(agent_product[i].id_product);
@@ -89,14 +89,14 @@ const letProductSold = async (req,res) => {
 
 //Lấy ra tất cả sản phẩm đã bán (chỉ gồm các sản phẩm đang ở trong tay khách hàng) của 1 đại lý
 const listSold = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
         let list = new Array;
-        const product_sold = await sold.find({id_user: req.querry.id_user});
-        const product_return = await svReturn.find({id_user: req.querry.id_user});
+        const product_sold = await sold.find({id_user: req.query.id_user});
+        const product_return = await svReturn.find({id_user: req.query.id_user});
         for (let i = 0; i < product_sold.length; i++) {
             list.push(await product.findById(product_sold[i].id_product));
         }
@@ -115,11 +115,11 @@ const listSold = async (req,res) => {
 
 //Triệu hồi sản phẩm
 const callBackProduct = async (req,res) => {
-    if (!req.querry.id_product) {
+    if (!req.query.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
     try {
-        const customer_product = await product.findByIdAndUpdate({_id: req.querry.id_product}, {status: "er_recall"});
+        const customer_product = await product.findByIdAndUpdate({_id: req.query.id_product}, {status: "er_recall"});
         await new erRecall({
             id_product: customer_product._id,
             id_user: customer_product.id_ag,
@@ -143,7 +143,7 @@ const letServiceProduct = async (req,res) => {
     try {
         const service = user.find({name: req.body.service_name});
         const product_service = await product.findByIdAndUpdate({_id: req.body.id_product}, {status: "er_service", id_sv: service._id});
-        const er_service = await erService.find({id_product: req.querry.id_product});
+        const er_service = await erService.find({id_product: req.query.id_product});
 
         if (er_service.length == 0) {
             await new erService({
@@ -170,12 +170,12 @@ const letServiceProduct = async (req,res) => {
 
 //Lấy ra các sản phẩm đang được triệu hồi của 1 đại lý
 const getReCallingProduct = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const recallProduct = await erRecall.findOne({id_user: req.querry.id_user});
+        const recallProduct = await erRecall.findOne({id_user: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < recallProduct.length; i++) {
             const _product = product.findById(recallProduct[i].id_product);
@@ -198,8 +198,9 @@ const takeRecallProduct = async (req,res) => {
     }
 
     try {
-        const product_recall = await erRecall.findByIdAndUpdate({id_product: req.body.id_product}, {status: "Đã nhận"});
-        const er_service = await erService.find({id_product: req.querry.id_product});
+        const product_recall = await erRecall.findOne({id_product: req.body.id_product});
+        await erRecall.findByIdAndUpdate({_id: product_recall._id}, {status: "Đã nhận"});
+        const er_service = await erService.find({id_product: req.query.id_product});
         if (er_service.length == 0) {
             await new erService({
                 id_product: product_recall.id_product,
@@ -224,14 +225,14 @@ const takeRecallProduct = async (req,res) => {
 
 //Lấy ra các sản phẩm đang bảo hành của 1 đại lý
 const listServiceProduct = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
         let list = new Array;
-        const er_service = await erService.find({id_user: req.querry.id_user});
-        const sv_fixing = await svFixing.find({id_user: req.querry.id_user});
+        const er_service = await erService.find({id_user: req.query.id_user});
+        const sv_fixing = await svFixing.find({id_user: req.query.id_user});
         for (let i = 0; i < er_service.length; i++) {
             list.push(await er_service.find({id: er_service[i].id}));
         }
@@ -250,12 +251,12 @@ const listServiceProduct = async (req,res) => {
 
 //Lấy ra các sản phẩm đã bảo hành xong và đại lý đã nhận sản phẩm đó của 1 đại lý
 const getFixedProductsInAgent = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const sv_fixed = await svFixed.find({id_ag: req.querry.id_user, agent_status: 'Đã nhận'});
+        const sv_fixed = await svFixed.find({id_ag: req.query.id_user, agent_status: 'Đã nhận'});
         let list = new Array;
         for (let i = 0; i < sv_fixed.length; i++) {
             const _product = product.findById(sv_fixed[i].id_product);
@@ -298,12 +299,12 @@ const returnProductCustomer = async (req,res) => {
 
 //Lấy ra các sản phẩm cũ cần trả lại cơ sở sản xuất của 1 đại lý
 const getBackProduction = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const product_backproduction = await backProduction.find({id_user: req.querry.id_user});
+        const product_backproduction = await backProduction.find({id_user: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < product_backproduction.length; i++) {
             const _product = product.findById(product_backproduction[i].id_product);
@@ -322,12 +323,12 @@ const getBackProduction = async (req,res) => {
 
 //Lấy ra các sản phẩm mới về của 1 đại lý
 const getNewProducts = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const agent_product = await backAgent.find({id_user: req.querry.id_user, agent_status: 'Chưa nhận'});
+        const agent_product = await backAgent.find({id_ag: req.query.id_user, agent_status: 'Chưa nhận'});
         let list = new Array;
         for (let i = 0; i < agent_product.length; i++) {
             const _product = product.findById(agent_product[i].id_product);
@@ -344,15 +345,15 @@ const getNewProducts = async (req,res) => {
     }
 }
 
-//Nhận sản phẩm mới từ cơ sở sản xuất
+//Nhận sản phẩm mới từ cơ sở sản xuất **************************************
 const takeNewProducts = async (req,res) => {
     if (!req.body.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        await backAgent.findByIdAndUpdate({id_product: req.body.id_product}, {agent_status: 'Đã nhận'});
-        await product.findByIdAndUpdate({_id: req.body.id_product}, {status: "back_agent"})
+        const bg_product = await backAgent.findOne({id_product: req.body.id_product});
+        await backAgent.findByIdAndUpdate({_id: bg_product._id}, {agent_status: 'Đã nhận'});
 
         return res.json({
             success: 1
@@ -365,12 +366,12 @@ const takeNewProducts = async (req,res) => {
 
 //Lấy ra các sản phẩm đã bảo hành xong nhưng đại lý chưa nhận được của 1 đại lý
 const getFixedProducts = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const agent_product = await svFixed.find({id_ag: req.querry.id_user, agent_status: 'Chưa nhận'});
+        const agent_product = await svFixed.find({id_ag: req.query.id_user, agent_status: 'Chưa nhận'});
         let list = new Array;
         for (let i = 0; i < agent_product.length; i++) {
             const _product = await product.findById(agent_product[i].id_product);
@@ -394,7 +395,8 @@ const takeFixedProducts = async (req,res) => {
     }
 
     try {
-        await svFixed.findByIdAndUpdate({id_product: req.body.id_product}, {agent_status: 'Đã nhận'});
+        const sv_fixed = await svFixed.findOne({id_product: req.body.id_product});
+        await svFixed.findByIdAndUpdate({_id: sv_fixed._id}, {agent_status: 'Đã nhận'});
         await product.findByIdAndUpdate({_id: req.body.id_product}, {status: "sv_fixed"})
 
         return res.json({
@@ -408,14 +410,14 @@ const takeFixedProducts = async (req,res) => {
 
 //Lấy ra các sản phẩm lỗi trả về cơ sở sản xuất của 1 đại lý
 const getErrorProducts = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
         let list = new Array;
-        const er_back_factory = await erBackFactory.find({id_ag: req.querry.id_user});
-        const er_back_production = await erBackProduction.find({id_ag: req.querry.id_user});
+        const er_back_factory = await erBackFactory.find({id_ag: req.query.id_user});
+        const er_back_production = await erBackProduction.find({id_ag: req.query.id_user});
         for (let i = 0; i < er_back_factory.length; i++) {
             list.push(await product.findById(er_back_factory[i].id_product));
         }
@@ -434,12 +436,12 @@ const getErrorProducts = async (req,res) => {
 
 //Số lượng sản phẩm bán ra trong mỗi tháng (của tất cả các năm) của 1 đại lý
 const staticByMonthSoldProduct = async(req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
       return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-        const sold_product = await sold.find({id_user: req.querry.id_user});
+        const sold_product = await sold.find({id_user: req.query.id_user});
         sold_product.sort(sortFunction);
         let list = new Array;
         let k = 1;
@@ -464,12 +466,12 @@ const staticByMonthSoldProduct = async(req,res) => {
 
 //Số lượng sản phẩm bán ra trong mỗi năm của 1 đại lý
 const staticByYearSoldProduct = async(req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
       return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-        const sold_product = await sold.find({id_user: req.querry.id_user});
+        const sold_product = await sold.find({id_user: req.query.id_user});
         sold_product.sort(sortFunction);
         let list = new Array;
         let k = 1;

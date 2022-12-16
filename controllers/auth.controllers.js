@@ -12,8 +12,8 @@ const erService = require('../models/erService');
 
 //Đăng nhập
 const login = async (req, res) => {
-    const username = req.querry.username;
-    const password = req.querry.password;
+    const username = req.query.username;
+    const password = req.query.password;
     
     if (!username || !password) {
         return res.status(BAD_REQUEST).json({ success: 0 });
@@ -101,12 +101,12 @@ const forgetPassword = async (req,res) => {
 
 //Lấy ra profile của tài khoản (của chính tài khoản đang đăng nhập)
 const getProfile = async (req,res) => {
-  if (!req.querry.user) {
+  if (!req.query.user) {
     return res.status(BAD_REQUEST).json({ success: 0 });
   }
   
   try {
-    const user_ = user.findById(req.querry.id_user);
+    const user_ = user.findById(req.query.id_user);
     return res.json({
       success: 1,
       name: user_.name,
@@ -122,18 +122,22 @@ const getProfile = async (req,res) => {
 
 //Gửi đi thông tin cần chỉnh sửa của tài khoản
 const editProfile = async (req,res) => {
-  if (!req.body.name || !req.body.password || !req.body.email || !req.querry.id_user) {
+  if (!req.body.id_user) {
     return res.status(BAD_REQUEST).json({ success: 0 });
   }
-  if (!validator.isEmail(req.body.email)) {
+  if ((req.body.email) && (!validator.isEmail(req.body.email))) {
     return res.status(BAD_REQUEST).json({ success: 0, errorMessage: EMAIL_INVALID });
   }
 
   try {
-    await user.findByIdAndUpdate({_id: req.querry.id_user}, {
+    await user.findByIdAndUpdate({_id: req.body.id_user}, {
       name: req.body.name,
       password: req.body.password,
       email: req.body.email
+    });
+    
+    return res.json({
+      success: 1
     });
   } catch (error) {
     console.log(error);
@@ -143,12 +147,12 @@ const editProfile = async (req,res) => {
 
 //Lấy ra thông tin chi tiết của sản phẩm
 const infoProduct = async (req,res) => {
-  if (!req.querry.id_product) {
+  if (!req.query.id_product) {
     return res.status(BAD_REQUEST).json({ success: 0 });
   }
 
   try {
-    const product_ = product.findById(req.querry.id_product);
+    const product_ = product.findById(req.query.id_product);
     return res.json({
       success: 1,
       name: product_.name,
@@ -172,12 +176,12 @@ function sortFunction(a,b){
 
 //Số lượng sản phẩm xuất ra cho các đại lý/ số lượng sản phẩm nhập về của 1 đại lý trong mỗi tháng (của tất cả các năm)
 const staticByMonthInBackAgent = async(req,res) => {
-  if (!req.querry.id_user) {
+  if (!req.query.id_user) {
     return res.status(BAD_REQUEST).json({ success: 0 });
   }
 
   try {
-    const back_agent = await backAgent.find({id_user: req.querry.id_user});
+    const back_agent = await backAgent.find({id_ag: req.query.id_user});
     back_agent.sort(sortFunction);
     let arr = new Array;
     let k = 1;
@@ -202,12 +206,12 @@ const staticByMonthInBackAgent = async(req,res) => {
 
 //Số lượng sản phẩm xuất ra cho các đại lý/ số lượng sản phẩm nhập về của 1 đại lý trong mỗi năm
 const staticByYearInBackAgent = async(req,res) => {
-  if (!req.querry.id_user) {
+  if (!req.query.id_user) {
     return res.status(BAD_REQUEST).json({ success: 0 });
   }
 
   try {
-    const back_agent = await backAgent.find({id_user: req.querry.id_user});
+    const back_agent = await backAgent.find({id_ag: req.query.id_user});
     back_agent.sort(sortFunction);
     let arr = new Array;
     let k = 1;
@@ -232,12 +236,12 @@ const staticByYearInBackAgent = async(req,res) => {
 
 //Số lượng sản phẩm cần bảo hành của 1 trung tâm bảo hành/ số lượng sản phẩm đưa đi bảo hành của 1 đại lý trong mỗi tháng (của tất cả các năm)
 const staticByMonthInErService = async(req,res) => {
-  if (!req.querry.id_user) {
+  if (!req.query.id_user) {
     return res.status(BAD_REQUEST).json({ success: 0 });
   }
 
   try {
-    const er_service = await erService.find({id_user: req.querry.id_user});
+    const er_service = await erService.find({id_user: req.query.id_user});
     er_service.sort(sortFunction);
     let arr = new Array;
     let k = 1;
@@ -262,12 +266,12 @@ const staticByMonthInErService = async(req,res) => {
 
 //Số lượng sản phẩm cần bảo hành của 1 trung tâm bảo hành/ số lượng sản phẩm đưa đi bảo hành của 1 đại lý trong mỗi năm
 const staticByYearInErService = async(req,res) => {
-  if (!req.querry.id_user) {
+  if (!req.query.id_user) {
     return res.status(BAD_REQUEST).json({ success: 0 });
   }
 
   try {
-    const er_service = await erService.find({id_user: req.querry.id_user});
+    const er_service = await erService.find({id_user: req.query.id_user});
     er_service.sort(sortFunction);
     let arr = new Array;
     let k = 1;

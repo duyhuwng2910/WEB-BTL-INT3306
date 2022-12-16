@@ -8,12 +8,12 @@ const { sortFunction } = require("./auth.controllers");
 
 //Lấy ra tất cả sản phẩm đang được sửa chữa của 1 trung tâm bảo hành
 const getAllFixingProduct = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
     try {
-        const fixing_product = await svFixing.find({id_sv: req.querry.id_user});
+        const fixing_product = await svFixing.find({id_sv: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < fixing_product.length; i++) {
             const _product = product.findById(fixing_product[i].id_product);
@@ -38,7 +38,7 @@ const letBackProductToAgent = async (req,res) => {
       }
     
     try {
-        const fixed_product = await product.find({id_product: req.body.id_product});
+        const fixed_product = await product.find({_id: req.body.id_product});
         await new svFixed({
             id_product: fixed_product.id_product,
             id_user: fixed_product.id_sv,
@@ -85,12 +85,12 @@ const letBackProductToFactory = async (req,res) => {
 
 //Lấy ra tất cả sản phẩm đã sửa chữa xong của 1 trung tâm bảo hành mà chưa trả về đại lý
 const getFixedProducts = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
     try {
-        const fixed_product = await svFixed.find({id_sv: req.querry.id_user});
+        const fixed_product = await svFixed.find({id_sv: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < fixed_product.length; i++) {
             const _product = product.findById(fixed_product[i].id_product);
@@ -110,14 +110,14 @@ const getFixedProducts = async (req,res) => {
 
 //Lấy ra tất cả sản phẩm không sửa được phải trả về cơ sở sản xuất của 1 trung tâm bảo hành
 const getErrorProducts = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
         let list = new Array;
-        const er_back_factory = await erBackFactory.find({id_sv: req.querry.id_user});
-        const er_back_production = await erBackProduction.find({id_sv: req.querry.id_user});
+        const er_back_factory = await erBackFactory.find({id_sv: req.query.id_user});
+        const er_back_production = await erBackProduction.find({id_sv: req.query.id_user});
         for (let i = 0; i < er_back_factory.length; i++) {
             list.push(await product.findById(er_back_factory[i].id_product));
         }
@@ -136,12 +136,12 @@ const getErrorProducts = async (req,res) => {
 
 //Lấy ra tất cả sản phẩm được đại lý gửi đến để sửa chữa của 1 trung tâm bảo hành
 const getServiceProducts = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
             return res.status(BAD_REQUEST).json({ success: 0 });
         }
 
     try {
-        const product_service = product.find({id_sv: req.querry.id_user, status:"er_service"});
+        const product_service = product.find({id_sv: req.query.id_user, status:"er_service"});
 
         return res.json({
             success: 1,
@@ -155,12 +155,12 @@ const getServiceProducts = async (req,res) => {
 
 //Nhận sản phẩm cần bảo hành từ đại lý
 const takeServiceProduct = async (req,res) => {
-    if (!req.querry.id_product) {
+    if (!req.query.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const product_service = product.findByIdAndUpdate({_id: req.querry.id_product},{status:"sv_fixing"});
+        const product_service = product.findByIdAndUpdate({_id: req.query.id_product},{status:"sv_fixing"});
         await new svFixing({
             id_product: product_service._id,
             id_ag: product_service.id_ag,
@@ -179,12 +179,12 @@ const takeServiceProduct = async (req,res) => {
 
 //Số lượng sản phẩm bảo hành thành công trong mỗi tháng (của tất cả các năm) của 1 trung tâm bảo hành
 const staticByMonthFixedProduct = async(req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
       return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-      const fixed_product = await svFixed.find({id_sv: req.querry.id_user});
+      const fixed_product = await svFixed.find({id_sv: req.query.id_user});
       fixed_product.sort(sortFunction);
       let list = new Array;
       let k = 1;
@@ -209,12 +209,12 @@ const staticByMonthFixedProduct = async(req,res) => {
 
 //Số lượng sản phẩm bảo hành thành công trong mỗi năm của 1 trung tâm bảo hành
 const staticByYearFixedProduct = async(req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
       return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-      const fixed_product = await svFixed.find({id_sv: req.querry.id_user});
+      const fixed_product = await svFixed.find({id_sv: req.query.id_user});
       fixed_product.sort(sortFunction);
       let list = new Array;
       let k = 1;

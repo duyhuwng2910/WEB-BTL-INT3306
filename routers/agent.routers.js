@@ -13,8 +13,8 @@ router.get('/list_month_soldproduct', agent.staticByMonthSoldProduct);
 router.get('/list_year_soldproduct', agent.staticByYearSoldProduct);
 router.get('/error_product', agent.getErrorProducts);
 router.get('/fixed_product', agent.getFixedProducts);
-router.get('/take_fixedproduct', agent.takeFixedProducts);
 
+router.post('/take_fixedproduct', agent.takeFixedProducts);
 router.post('/take_recallproduct', agent.takeRecallProduct);
 router.post('/take_newproduct', agent.takeNewProducts);
 router.post('/return_product', agent.returnProductCustomer);
