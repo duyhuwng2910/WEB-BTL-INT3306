@@ -132,8 +132,8 @@ const getSendAgentProduct = async (req,res) => {
         return res.status(UNKNOWN).json({ success: 0});
     }
 }
-/********************************************************************************************/
-//Nhận sản phẩm cũ 
+
+//Nhận sản phẩm cũ ********************
 const takeOldProduct = async (req,res) => {
     if (!req.body.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
@@ -152,21 +152,22 @@ const takeOldProduct = async (req,res) => {
     }
 }
 
-//Nhận sản phẩm lỗi
+//Nhận sản phẩm lỗi ************************
 const takeErrorProduct = async (req,res) => {
     if (!req.body.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
     try {
-        const error_product = await erBackFactory.find({id_product: req.body.id_product})
+        const error_product = await erBackFactory.findOne({id_product: req.body.id_product});
         await new erBackProduction({
             id_product: error_product.id_product,
             id_ag: error_product.id_ag,
             id_pr: error_product.id_pr,
             id_sv: error_product.id_sv
         }).save();
-        
+        await erBackFactory.deleteOne({id_product: req.body.id_product});
+        await product.findByIdAndUpdate({_id: req.body.id_product}, {status: "er_back_production"});
         return res.json({
           success: 1
         });
@@ -176,7 +177,7 @@ const takeErrorProduct = async (req,res) => {
     }
 }
 
-//Lấy ra danh sách sản phẩm lỗi - cũ mà cơ sở chưa nhận được
+//Lấy ra danh sách sản phẩm lỗi - cũ mà cơ sở chưa nhận được ***********************
 const getErrorOrOldProductNonConfirm = async (req,res) => {
     if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
@@ -185,12 +186,16 @@ const getErrorOrOldProductNonConfirm = async (req,res) => {
     try {
         let list = new Array;
         const er_back_factory = await erBackFactory.find({id_pr: req.query.id_user});
-        const back_production = await backProduction.find({id_user: req.query.id_user, status: "Chưa nhận"});
+        const back_production = await backProduction.find({id_pr: req.query.id_user, status: "Chưa nhận"});
         for (let i = 0; i < er_back_factory.length; i++) {
-            list.push(await product.findById(er_back_factory[i].id_product));
+            const bf = await product.findById(er_back_factory[i].id_product);
+            if (bf) list.push(bf);
+            //console.log(bf);
         }
         for (let i = 0; i < back_production.length; i++) {
-            list.push(await product.findById(back_production[i].id_product));
+            const bp = await product.findById(back_production[i].id_product)
+            if (bp) list.push(bp);
+            console.log(bp);
         }
         return res.json({
             success: 1,
@@ -202,7 +207,7 @@ const getErrorOrOldProductNonConfirm = async (req,res) => {
     }
 }
 
-//Lấy ra danh sách sản phẩm lỗi - cũ mà cơ sở sản xuất đã nhận
+//Lấy ra danh sách sản phẩm lỗi - cũ mà cơ sở sản xuất đã nhận **************************
 const getErrorOrOldProductIsConfirm = async (req,res) => {
     if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
@@ -211,12 +216,14 @@ const getErrorOrOldProductIsConfirm = async (req,res) => {
     try {
         let list = new Array;
         const er_back_production = await erBackProduction.find({id_pr: req.query.id_user});
-        const back_production = await backProduction.find({id_user: req.query.id_user, status: "Đã nhận"});
+        const back_production = await backProduction.find({id_pr: req.query.id_user, status: "Đã nhận"});
         for (let i = 0; i < er_back_production.length; i++) {
-            list.push(await product.findById(er_back_production[i].id_product));
+            const ebp = await product.findById(er_back_production[i].id_product);
+            if (ebp) list.push(ebp);
         }
         for (let i = 0; i < back_production.length; i++) {
-            list.push(await product.findById(back_production[i].id_product));
+            const bp = await product.findById(back_production[i].id_product);
+            if (bp) list.push(bp);
         }
         return res.json({
             success: 1,

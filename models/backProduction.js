@@ -3,7 +3,8 @@ const { Schema } = mongoose;
 
 const backProductionSchema = new Schema({
     id_product: String,
-    id_user: String,
+    id_pr: String,
+    id_ag: String,
     status: String,
     time:{
         type: Date,
