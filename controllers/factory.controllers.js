@@ -42,7 +42,11 @@ const sendProductToAgent = async (req,res) => {
     
     try {
         const agent = await user.findOne({name: req.body.agent_name});
-        const agent_product = await product.findByIdAndUpdate({_id: req.body.id_product},{status:"back_agent", id_ag: agent._id});
+        const agent_product = await product.findByIdAndUpdate({_id: req.body.id_product},{
+            status:"back_agent", 
+            id_ag: agent._id, 
+            namespace: "Đại lý phân phối"
+        });
         if (agent_product) {
             await new backAgent({
                 id_product: req.body.id_product,

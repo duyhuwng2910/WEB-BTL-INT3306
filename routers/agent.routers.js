@@ -3,12 +3,12 @@ const agent = require('../controllers/agent.controllers');
 const router = require('express').Router();
 
 router.get('/list_sold', agent.listSold);
-router.get('/new_product', agent.getAllNewProducts); 
+router.get('/list_new_product_ic', agent.getNewProductIsConfirm); 
 router.get('/list_recall_product', agent.getReCallingProduct);
 router.get('/list_service_product', agent.listServiceProduct);
 router.get('/list_fixed_product', agent.getFixedProducts);
 router.get('/list_backproduction', agent.getBackProduction);
-router.get('/list_newproduct', agent.getNewProducts);
+router.get('/list_new_product_nc', agent.getNewProductNonConfirm);
 router.get('/list_month_soldproduct', agent.staticByMonthSoldProduct);
 router.get('/list_year_soldproduct', agent.staticByYearSoldProduct);
 router.get('/error_product', agent.getErrorProducts);
