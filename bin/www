@@ -7,7 +7,7 @@
 const app = require('../app');
 const debug = require('debug')('chatting:server');
 const http = require('http');
-const { Server } = require('socket.io');
+// const { Server } = require('socket.io');
 
 // const { initializeSocket } = require('../services/socket/socketio');
 // const { initializeEmiter } = require('../services/socket/socketEmiter');
@@ -29,12 +29,12 @@ const server = http.createServer(app);
  * Create Socket.
  */
 
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
-});
+// const io = new Server(server, {
+//   cors: {
+//     origin: '*',
+//     methods: ['GET', 'POST']
+//   }
+// });
 
 // initializeEmiter(io);
 // io.on('connection', (socket) => {

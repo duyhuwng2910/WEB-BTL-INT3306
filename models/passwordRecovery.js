@@ -1,7 +1,7 @@
 const mongoose = require('./database');
 const { Schema } = mongoose;
 
-const regitEmailSchema = new Schema({
+const passwordRecoverySchema = new Schema({
     email: String,
     id_user: String,
     otp: String,
@@ -11,5 +11,5 @@ const regitEmailSchema = new Schema({
     }
 })
 
-const regitEmail = mongoose.model('regit_email', regitEmailSchema);
-module.exports = regitEmail;
+const passwordRecovery = mongoose.model('password_recovery', passwordRecoverySchema);
+module.exports = passwordRecovery;
