@@ -16,9 +16,9 @@ router.get('/fixed_product', agent.getFixedProducts);
 router.get('/take_fixedproduct', agent.takeFixedProducts);
 
 router.post('/take_recallproduct', agent.takeRecallProduct); // Chưa có data
-router.post('/take_newproduct', agent.takeNewProducts); 
-router.post('/return_product', agent.returnProductCustomer);
+router.post('/take_newproduct', agent.takeNewProducts); // Lỗi 500
+router.post('/return_product', agent.returnProductCustomer); // Lỗi 400
 router.post('/backproduction', agent.backToProduction); // Ok
-router.post('/service_product', agent.letServiceProduct);
+router.post('/service_product', agent.letServiceProduct); 
 router.post('/sold_product', agent.letProductSold);
 module.exports = router;
