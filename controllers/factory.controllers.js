@@ -8,20 +8,21 @@ const product = require("../models/product");
 const { user } = require("../models/user");
 const { sortFunction } = require("./auth.controllers");
 
-//Lấy ra danh sách sản phẩm mới trong kho của 1 cơ sở sản xuất
+//Lấy ra danh sách sản phẩm mới trong kho của 1 cơ sở sản xuất **********
 const getNewProducts = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
     try {
-        const new_product = await newProduct.find({id_user: req.querry.id_user});
+        const new_product = await newProduct.find({id_user: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < new_product.length; i++) {
-            const _product = product.findById(new_product[i].id_product);
+            const _product = await product.findById(new_product[i].id_product);
             list.push(_product);
         }
         
+        console.log(list);
         return res.json({
           success: 1,
           list: list
@@ -33,25 +34,36 @@ const getNewProducts = async (req,res) => {
     }
 }
 
-//Xuất sản phẩm cho đại lý
+//Xuất sản phẩm cho đại lý **********************
 const sendProductToAgent = async (req,res) => {
     if (!req.body.id_product || !req.body.agent_name) {
         return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
     try {
-        const agent = user.findOne({name: req.body.agent_name});
-        await product.findByIdAndUpdate({_id: req.body.id_product},{status:"back_agent", id_ag: agent._id});
-        await new backAgent({
-            id_product: req.body.id_product,
-            id_user: agent._id,
-            status: "Chưa nhận"
-        }).save();
+        const agent = await user.findOne({name: req.body.agent_name});
+        const agent_product = await product.findByIdAndUpdate({_id: req.body.id_product},{
+            status:"back_agent", 
+            id_ag: agent._id, 
+            namespace: "Đại lý phân phối"
+        });
+        if (agent_product) {
+            await new backAgent({
+                id_product: req.body.id_product,
+                id_ag: agent._id,
+                id_pr: agent_product.id_pr,
+                agent_status: "Chưa nhận"
+            }).save();
 
-        await newProduct.deleteOne({id_product: req.body.id_product})
+            await newProduct.deleteOne({id_product: req.body.id_product});
 
+            return res.json({
+                success: 1
+            });
+        } 
         return res.json({
-          success: 1
+            success: 0,
+            error: "Không tìm thấy sản phẩm"
         });
     
     } catch (error) {
@@ -60,7 +72,7 @@ const sendProductToAgent = async (req,res) => {
     }
 }
 
-//Nhập các lô sản phẩm vào kho
+//Nhập các lô sản phẩm vào kho ****************
 const entryBatchProduct = async (req,res) => {
     if (!req.body.id_user || !req.body.batch || !req.body.name || !req.body.color || !req.body.amount) {
         return res.status(BAD_REQUEST).json({ success: 0 });
@@ -71,10 +83,14 @@ const entryBatchProduct = async (req,res) => {
         for (let i = 0; i < k; i++) {
             const new_product = await new product({
                 id_pr: req.body.id_user,
+                id_ag: "",
+                id_sv: "",
                 batch: req.body.batch,
                 status: "new_product",
                 name: req.body.name,
-                color: req.body.color
+                color: req.body.color,
+                bio: "",
+                namespace: "Cơ sở sản xuất"
             }).save();
             await new newProduct({
                 id_product: new_product._id,
@@ -92,17 +108,17 @@ const entryBatchProduct = async (req,res) => {
     }
 }
 
-//Lấy ra danh sách tất cả sản phẩm xuất đi của 1 cơ sở sản xuất
+//Lấy ra danh sách tất cả sản phẩm xuất đi của 1 cơ sở sản xuất *********
 const getSendAgentProduct = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
     try {
-        const send_product = await backAgent.find({id_user: req.querry.id_user});
+        const send_product = await backAgent.find({id_pr: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < send_product.length; i++) {
-            const _product = product.findById(send_product[i].id_product);
+            const _product = await product.findById(send_product[i].id_product);
             list.push(_product);
         }
         
@@ -117,14 +133,15 @@ const getSendAgentProduct = async (req,res) => {
     }
 }
 
-//Nhận sản phẩm cũ
+//Nhận sản phẩm cũ ********************
 const takeOldProduct = async (req,res) => {
-    if (!req.querry.id_product) {
+    if (!req.body.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
     try {
-        await backProduction.findByIdAndUpdate({id_product: req.querry.id_product},{status: "Đã nhận"});
+        const back_production = await backProduction.findOne({id_product: req.body.id_product});
+        await backProduction.findByIdAndUpdate({_id: back_production._id},{status: "Đã nhận"});
 
         return res.json({
           success: 1
@@ -135,21 +152,22 @@ const takeOldProduct = async (req,res) => {
     }
 }
 
-//Nhận sản phẩm lỗi
+//Nhận sản phẩm lỗi ************************
 const takeErrorProduct = async (req,res) => {
     if (!req.body.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
     try {
-        const error_product = await erBackFactory.find({id_product: req.body.id_product})
+        const error_product = await erBackFactory.findOne({id_product: req.body.id_product});
         await new erBackProduction({
             id_product: error_product.id_product,
             id_ag: error_product.id_ag,
             id_pr: error_product.id_pr,
             id_sv: error_product.id_sv
         }).save();
-        
+        await erBackFactory.deleteOne({id_product: req.body.id_product});
+        await product.findByIdAndUpdate({_id: req.body.id_product}, {status: "er_back_production"});
         return res.json({
           success: 1
         });
@@ -159,21 +177,25 @@ const takeErrorProduct = async (req,res) => {
     }
 }
 
-//Lấy ra danh sách sản phẩm lỗi - cũ mà cơ sở chưa nhận được
+//Lấy ra danh sách sản phẩm lỗi - cũ mà cơ sở chưa nhận được ***********************
 const getErrorOrOldProductNonConfirm = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
         let list = new Array;
-        const er_back_factory = await erBackFactory.find({id_pr: req.querry.id_user});
-        const back_production = await backProduction.find({id_user: req.querry.id_user, status: "Chưa nhận"});
+        const er_back_factory = await erBackFactory.find({id_pr: req.query.id_user});
+        const back_production = await backProduction.find({id_pr: req.query.id_user, status: "Chưa nhận"});
         for (let i = 0; i < er_back_factory.length; i++) {
-            list.push(await product.findById(er_back_factory[i].id_product));
+            const bf = await product.findById(er_back_factory[i].id_product);
+            if (bf) list.push(bf);
+            //console.log(bf);
         }
         for (let i = 0; i < back_production.length; i++) {
-            list.push(await product.findById(back_production[i].id_product));
+            const bp = await product.findById(back_production[i].id_product)
+            if (bp) list.push(bp);
+            console.log(bp);
         }
         return res.json({
             success: 1,
@@ -185,21 +207,23 @@ const getErrorOrOldProductNonConfirm = async (req,res) => {
     }
 }
 
-//Lấy ra danh sách sản phẩm lỗi - cũ mà cơ sở sản xuất đã nhận
+//Lấy ra danh sách sản phẩm lỗi - cũ mà cơ sở sản xuất đã nhận **************************
 const getErrorOrOldProductIsConfirm = async (req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
         let list = new Array;
-        const er_back_production = await erBackProduction.find({id_pr: req.querry.id_user});
-        const back_production = await backProduction.find({id_user: req.querry.id_user, status: "Đã nhận"});
+        const er_back_production = await erBackProduction.find({id_pr: req.query.id_user});
+        const back_production = await backProduction.find({id_pr: req.query.id_user, status: "Đã nhận"});
         for (let i = 0; i < er_back_production.length; i++) {
-            list.push(await product.findById(er_back_production[i].id_product));
+            const ebp = await product.findById(er_back_production[i].id_product);
+            if (ebp) list.push(ebp);
         }
         for (let i = 0; i < back_production.length; i++) {
-            list.push(await product.findById(back_production[i].id_product));
+            const bp = await product.findById(back_production[i].id_product);
+            if (bp) list.push(bp);
         }
         return res.json({
             success: 1,
@@ -213,12 +237,12 @@ const getErrorOrOldProductIsConfirm = async (req,res) => {
 
 //Số lượng sản phẩm sản xuất trong mỗi tháng (của tất cả các năm) của 1 cơ sở sản xuất
 const staticByMonthNewProduct = async(req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
       return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-        const new_product = await newProduct.find({id_user: req.querry.id_user});
+        const new_product = await newProduct.find({id_user: req.query.id_user});
         new_product.sort(sortFunction);
         let list = new Array;
         let k = 1;
@@ -243,12 +267,12 @@ const staticByMonthNewProduct = async(req,res) => {
 
 //Số lượng sản phẩm sản xuất trong mỗi năm của 1 cơ sở sản xuất
 const staticByYearNewProduct = async(req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
       return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-        const new_product = await newProduct.find({id_user: req.querry.id_user});
+        const new_product = await newProduct.find({id_user: req.query.id_user});
         new_product.sort(sortFunction);
         let list = new Array;
         let k = 1;
@@ -273,12 +297,12 @@ const staticByYearNewProduct = async(req,res) => {
 
 //Số lượng sản phẩm cũ trong mỗi tháng (của tất cả các năm) của 1 cơ sở sản xuất
 const staticByMonthBackProduct = async(req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
       return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-        const back_product = await backProduction.find({id_user: req.querry.id_user});
+        const back_product = await backProduction.find({id_user: req.query.id_user});
         back_product.sort(sortFunction);
         let list = new Array;
         let k = 1;
@@ -303,12 +327,12 @@ const staticByMonthBackProduct = async(req,res) => {
 
 //Số lượng sản phẩm cũ trong mỗi năm của 1 cơ sở sản xuất
 const staticByYearBackProduct = async(req,res) => {
-    if (!req.querry.id_user) {
+    if (!req.query.id_user) {
       return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-        const back_product = await backProduction.find({id_user: req.querry.id_user});
+        const back_product = await backProduction.find({id_user: req.query.id_user});
         back_product.sort(sortFunction);
         let list = new Array;
         let k = 1;

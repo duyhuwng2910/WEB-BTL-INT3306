@@ -104,7 +104,8 @@ const createAccount = async (req, res) => {
         password: req.body.password,
         type_user: req.body.user_type,
         email: "",
-        profile: ""
+        profile: "",
+        name: ""
 
       }).save();
   

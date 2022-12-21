@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const path = require('path');
 const upload = multer();
+const dotenv = require('dotenv').config();
 
 const mongoose = require('./models/database');
 
@@ -15,9 +16,9 @@ const agentRouter = require('./routers/agent.routers');
 const factoryRouter = require('./routers/factory.routers');
 const serviceRouter = require('./routers/service.routers');
 
-const server = app.listen(8000, () => {
-    console.log(`Express running → PORT ${server.address().port}`);
-});
+// const server = app.listen(8000, () => {
+//     console.log(`Express running → PORT ${server.address().port}`);
+// });
 
 app.use(express.json());
 
