@@ -5,6 +5,7 @@ const {user, userType} = require('../models/user');
 const product = require('../models/product');
 const listProduct = require('../models/listProduct');
 const { USERTYPE_INVALID, EMAIL_INVALID, REPASSWORD_INCORRECT, USERNAME_EXISTS } = require('../config/ErrorMessages');
+const { deleteAccountOptions, transporter } = require('../services/mail');
 
 const getAllUser = async (req, res) => {
     if (!req.query.id_user) {
@@ -140,11 +141,32 @@ const createAccount = async (req, res) => {
       res.status(UNKNOWN).json({ success: 0 });
       return console.log(error);
     }
-  }
+}
+
+//Xóa tài khoản
+const deleteAccount = async (req,res) => {
+    if (!req.body.id_user) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+    
+    try {
+        const uid = await user.findById(req.body.id_user);
+        if (uid.email) {
+            await transporter.sendMail(deleteAccountOptions(uid.email));
+        }
+        await user.deleteOne({_id: uid._id});
+
+        return res.json({ success: 1 });
+    } catch (error) {
+      res.status(UNKNOWN).json({ success: 0 });
+      return console.log(error);
+    }
+}
 
 module.exports = {
     getAllUser,
     getListProduct,
     createAccount,
-    getAllProduct
+    getAllProduct,
+    deleteAccount
 }

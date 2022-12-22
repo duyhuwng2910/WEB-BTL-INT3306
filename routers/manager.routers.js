@@ -7,5 +7,6 @@ router.get('/list_product', manager.getListProduct);
 
 router.post('/create_account', manager.createAccount); //
 router.get('/all_product', manager.getAllProduct);
+router.post('/delete_account', manager.deleteAccount);
 
 module.exports = router;

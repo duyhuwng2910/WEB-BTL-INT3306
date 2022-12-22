@@ -12,6 +12,7 @@ const backAgent = require('../models/backAgent');
 const erService = require('../models/erService');
 const { transporter, verificationEmailOptions , resetPasswordEmailOptions } = require('../services/mail');
 const passwordRecovery = require('../models/passwordRecovery');
+const sold = require('../models/sold');
 
 //Đăng nhập
 const login = async (req, res) => {
@@ -280,6 +281,28 @@ const infoProduct = async (req,res) => {
     }
 }
 
+//Kiểm tra thời gian bảo hành của tất cả sản phẩm
+function checkTimeService() {
+    try {
+        const pd = product.find({$or:[
+            {status: "sold"},
+            {status: "sv_return"}
+        ]});
+        
+        for (let i = 0; i < pd.length; i++) {
+            const pd_ = sold.findById(pd._id);
+            if (new Date().getTime() - pd_.time.getTime() > (pd.ToS * 30 * 24 * 60 * 60 * 1000)) {
+                product.findByIdAndUpdate({_id: pd._id}, {st_Service: "Hết bảo hành"});
+            }
+        }   
+        return 1;
+
+    } catch (error) {
+        console.log(error);
+        return -1;
+    }
+}
+
 //sắp xếp theo thời gian
 function sortFunction(a,b){  
     var dateA = new Date(a.time).getTime();
@@ -422,5 +445,6 @@ module.exports = {
     sortFunction,
     checkPasswordRecovery,
     changePassword,
-    reqChangeEmail
+    reqChangeEmail,
+    checkTimeService
 }
