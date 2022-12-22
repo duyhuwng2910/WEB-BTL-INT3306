@@ -33,7 +33,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/manager', managerRouter);
 app.use('/auth', authRouter);
-app.use('/agent', agentRouter)
+app.use('/agent', agentRouter);
 app.use('/factory', factoryRouter);
 app.use('/service', serviceRouter);
 

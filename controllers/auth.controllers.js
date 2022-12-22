@@ -35,7 +35,9 @@ const login = async (req, res) => {
     
         return res.json({
             success: 1,
-            id: users._id
+            id: users._id,
+            type: users.type_user,
+            verified: users.verified
         });
       
     } catch (error) {
@@ -58,7 +60,7 @@ const confirmEmail = async (req,res) => {
         if (await user.findOne({email: req.body.email})) {
             return res.status(UNAUTHORIZED).json({ success: 0, errorMessage: EMAIL_EXISTS });
         }
-        await user.findByIdAndUpdate({_id: req.body.id_user}, {email: req.body.email});
+        await user.findByIdAndUpdate({_id: req.body.id_user}, {email: req.body.email, verified: true});
         await regitEmail.deleteMany({id_user: req.body.id_user});
         const token = randomBytes(6).toString('hex');
         const emailRegistration = await new regitEmail({
@@ -219,7 +221,8 @@ const getProfile = async (req,res) => {
             email: user_.email,
             username: user_.username,
             password: user_.password,
-            type_user: user_.type_user
+            type_user: user_.type_user,
+            verified: user_.verified
         });
     } catch (error) {
         console.log(error);
@@ -235,7 +238,10 @@ const editProfile = async (req,res) => {
 
     try {
         await user.findByIdAndUpdate({_id: req.body.id_user}, {
-            name: req.body.name
+            name: req.body.name,
+            bio: req.body.bio,
+            address: req.body.address,
+            phone: req.body.phone
         });
       
         return res.json({
