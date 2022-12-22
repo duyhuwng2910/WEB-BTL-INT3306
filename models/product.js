@@ -10,7 +10,8 @@ const productSchema = new Schema({
     color: String,
     namespace: String,
     status: String,
-    bio: String
+    bio: String,
+    
 })
 
 const product = mongoose.model('product', productSchema);
