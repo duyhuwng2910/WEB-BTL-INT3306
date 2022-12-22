@@ -14,7 +14,11 @@ const getAllUser = async (req, res) => {
     try {
         const manager = await user.findById(req.query.id_user);
         if (manager.type_user != "mg") return res.status(BAD_REQUEST).json({ success: 0, errorMessage: "Bạn không có quyền truy cập" });
-        const users = await user.find({$or:{type_user: userType.agent, type_user: userType.production_unit, type_user: userType.service_center }});
+        const users = await user.find({$or:[
+                {type_user: userType.agent}, 
+                {type_user: userType.production_unit}, 
+                {type_user: userType.service_center} 
+            ]});
         return res.json({
             success: 1,
             users: users
