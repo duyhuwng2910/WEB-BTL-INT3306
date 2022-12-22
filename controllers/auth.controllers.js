@@ -271,7 +271,8 @@ const infoProduct = async (req,res) => {
           id_ag: product_.id_ag,
           id_sv: product_.id_sv,
           id_pr: product_.id_pr,
-          batch: product_.batch
+          batch: product_.batch,
+          verified: product_.verified
       });
     } catch (error) {
         console.log(error);
