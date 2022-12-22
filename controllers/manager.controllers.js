@@ -50,7 +50,7 @@ const getListProduct = async (req, res) => {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
-    await listProduct.deleteMany({namespace:'Đại lý'});
+    await listProduct.deleteMany({namespace:'Đại lý phân phối'});
     await listProduct.deleteMany({namespace:'Cơ sở sản xuất'});
     await listProduct.deleteMany({namespace:'Trung tâm bảo hành'});
 
