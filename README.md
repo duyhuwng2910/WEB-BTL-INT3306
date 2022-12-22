@@ -1,3 +1,3 @@
 # Khởi tạo
-node app.js
+npm start
 # Port 8000
