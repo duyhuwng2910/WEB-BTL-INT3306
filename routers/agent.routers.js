@@ -14,3 +14,4 @@ router.get('/list_year_soldproduct', agent.staticByYearSoldProduct);
 router.get('/list_error_product', agent.getErrorProducts);
 router.get('/list_fixed_product_ic', agent.getFixedProductsIsConfirm);
 
+module.exports = router;
