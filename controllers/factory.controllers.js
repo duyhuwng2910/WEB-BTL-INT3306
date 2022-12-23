@@ -74,8 +74,7 @@ const sendProductToAgent = async (req,res) => {
 
 //Nhập các lô sản phẩm vào kho ****************
 const entryBatchProduct = async (req,res) => {
-    if (!req.body.id_user || !req.body.batch || !req.body.name || !req.body.color 
-        || !req.body.amount || !req.body.DoM || !req.body.ToS) {
+    if (!req.body.id_user || !req.body.batch || !req.body.name || !req.body.color || !req.body.amount) {
         return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
@@ -91,10 +90,7 @@ const entryBatchProduct = async (req,res) => {
                 name: req.body.name,
                 color: req.body.color,
                 bio: "",
-                namespace: "Cơ sở sản xuất",
-                DoM: req.body.DoM,
-                ToS: req.body.ToS,
-                st_Service: "Còn bảo hành"
+                namespace: "Cơ sở sản xuất"
             }).save();
             await new newProduct({
                 id_product: new_product._id,
