@@ -30,7 +30,7 @@ function resetPasswordEmailOptions(_to, _token) {
   }
 }
 
-function deleteAccountOP(_to, _token) {
+function deleteAccountOP(_to) {
   return {
     from: `Product Move <${process.env.SERVICE_EMAIL_ADDRESS}>`,
     to: _to,
