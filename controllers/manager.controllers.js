@@ -164,7 +164,7 @@ const deleteAccount = async (req,res) => {
 }
 
 module.exports = {
-    getAllUser,
+    getAllUser,  
     getListProduct,
     createAccount,
     getAllProduct,
