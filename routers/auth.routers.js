@@ -10,7 +10,6 @@ router.get('/list_month_backagent', auth.staticByMonthInBackAgent);
 router.get('/list_year_backagent', auth.staticByYearInBackAgent);
 router.get('/list_moth_erservice', auth.staticByMonthInErService);
 router.get('/list_year_erservice', auth.staticByYearInErService);
-router.get('/infor_customer', auth.inforCustomer);
 
 router.post('/req_change_email', auth.reqChangeEmail);
 router.post('/confirm_email', auth.confirmEmail);

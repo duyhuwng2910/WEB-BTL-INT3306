@@ -11,9 +11,7 @@ const productSchema = new Schema({
     namespace: String,
     status: String,
     bio: String,
-    DoM: Date,
-    ToS: Number,
-    st_Service: String
+    
 })
 
 const product = mongoose.model('product', productSchema);
