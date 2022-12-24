@@ -276,7 +276,7 @@ const infoProduct = async (req,res) => {
           id_sv: product_.id_sv,
           id_pr: product_.id_pr,
           batch: product_.batch,
-          st_service: product_.st_service,
+          st_service: product_.st_Service,
           ToS: product_.ToS,
           DoM: product_.DoM
       });

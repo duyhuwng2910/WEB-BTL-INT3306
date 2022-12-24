@@ -11,7 +11,7 @@ const productSchema = new Schema({
     namespace: String,
     status: String,
     bio: String,
-    st_service: String,
+    st_Service: String,
     DoM: Date,
     ToS: Number
 })

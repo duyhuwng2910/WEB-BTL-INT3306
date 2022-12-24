@@ -94,7 +94,7 @@ const entryBatchProduct = async (req,res) => {
                 namespace: "Cơ sở sản xuất",
                 DoM: req.body.DoM,
                 ToS: req.body.ToS,
-                st_service: "Còn bảo hành"
+                st_Service: "Còn bảo hành"
             }).save();
             await new newProduct({
                 id_product: new_product._id,
