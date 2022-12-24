@@ -3,7 +3,7 @@ const validator = require('validator');
 const { randomBytes } = require('node:crypto');
 
 const { BAD_REQUEST, UNKNOWN, UNAUTHORIZED} = require('../config/HttpStatusCodes');
-const { EMAIL_INVALID, USERNAME_INCORRECT, PASSWORD_INCORRECT, EMAIL_EXISTS, EMAIL_ERROR, TOKEN_INCORRECT, TOKEN_EXPIRED, REPASSWORD_INCORRECT, OTP_CODE_INCORRECT, EMAIL_INCORRECT, OTP_INCORRECT, OTP_EXPIRED } = require('../config/ErrorMessages');
+const { EMAIL_INVALID, USERNAME_INCORRECT, PASSWORD_INCORRECT, EMAIL_EXISTS, REPASSWORD_INCORRECT, EMAIL_INCORRECT, OTP_INCORRECT, OTP_EXPIRED } = require('../config/ErrorMessages');
 
 const {user} = require('../models/user');
 const regitEmail = require('../models/regitEmail');
@@ -210,7 +210,7 @@ const changePassword = async (req, res) => {
 
 //Lấy ra profile của tài khoản (của chính tài khoản đang đăng nhập)
 const getProfile = async (req,res) => {
-    if (!req.query.user) {
+    if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
@@ -223,6 +223,9 @@ const getProfile = async (req,res) => {
             username: user_.username,
             password: user_.password,
             type_user: user_.type_user,
+            address: user_.address,
+            phone: user_.phone,
+            bio: user_.bio,
             verified: user_.verified
         });
     } catch (error) {
@@ -272,34 +275,11 @@ const infoProduct = async (req,res) => {
           id_ag: product_.id_ag,
           id_sv: product_.id_sv,
           id_pr: product_.id_pr,
-          batch: product_.batch,
-          
+          batch: product_.batch
       });
     } catch (error) {
         console.log(error);
         return res.status(UNKNOWN).json({ success: 0});
-    }
-}
-
-//Kiểm tra thời gian bảo hành của tất cả sản phẩm
-function checkTimeService() {
-    try {
-        const pd = product.find({$or:[
-            {status: "sold"},
-            {status: "sv_return"}
-        ]});
-        
-        for (let i = 0; i < pd.length; i++) {
-            const pd_ = sold.findById(pd._id);
-            if (new Date().getTime() - pd_.time.getTime() > (pd.ToS * 30 * 24 * 60 * 60 * 1000)) {
-                product.findByIdAndUpdate({_id: pd._id}, {st_Service: "Hết bảo hành"});
-            }
-        }   
-        return 1;
-
-    } catch (error) {
-        console.log(error);
-        return -1;
     }
 }
 
@@ -430,6 +410,26 @@ const staticByYearInErService = async(req,res) => {
     }
 }
 
+//Lấy ra thông tin khách hàng **********************
+const inforCustomer = async (req,res) => {
+    if (!req.query.id_product) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+  
+    try {
+        const sold_ = await sold.findById(req.query.id_product);
+        return res.json({
+            success: 1,
+            name: sold_.customer,
+            address: sold_.address,
+            phone: sold_.phoneNumber
+        });
+      } catch (error) {
+          console.log(error);
+          return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
 module.exports = {
     login,
     regiterEmail,
@@ -446,5 +446,5 @@ module.exports = {
     checkPasswordRecovery,
     changePassword,
     reqChangeEmail,
-    checkTimeService
+    inforCustomer
 }
