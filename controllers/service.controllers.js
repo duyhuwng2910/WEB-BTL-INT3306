@@ -11,8 +11,8 @@ const { sortFunction } = require("./auth.controllers");
 //Lấy ra tất cả sản phẩm đang được sửa chữa của 1 trung tâm bảo hành ************
 const getAllFixingProduct = async (req,res) => {
     if (!req.query.id_user) {
-          return res.status(BAD_REQUEST).json({ success: 0 });
-      }
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
     
     try {
         const fixing_product = await svFixing.find({id_sv: req.query.id_user});
@@ -55,7 +55,7 @@ const letBackProductToAgent = async (req,res) => {
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
                 arr: {where: user_.name,time: Date.now(),status:"Đã sửa xong"}}
-      });
+        });
         return res.json({
             success: 1
         });
@@ -104,7 +104,7 @@ const letBackProductToFactory = async (req,res) => {
 const getFixedProducts = async (req,res) => {
     if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
-      }
+    }
     
     try {
         const fixed_product = await svFixed.find({id_sv: req.query.id_user});
@@ -156,8 +156,8 @@ const getErrorProducts = async (req,res) => {
 //Lấy ra tất cả sản phẩm được đại lý gửi đến để sửa chữa của 1 trung tâm bảo hành **************
 const getServiceProducts = async (req,res) => {
     if (!req.query.id_user) {
-            return res.status(BAD_REQUEST).json({ success: 0 });
-        }
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
 
     try {
         const product_service = await product.find({id_sv: req.query.id_user, status:"er_service"});

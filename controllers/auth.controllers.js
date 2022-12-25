@@ -323,11 +323,11 @@ const historicMoveProduct = async (req,res) => {
             success: 1,
             arr: history.arr
         });
-      } catch (error) {
-          console.log(error);
-          return res.status(UNKNOWN).json({ success: 0});
-      }
-  }
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
 
 //sắp xếp theo thời gian
 function sortFunction(a,b){  
