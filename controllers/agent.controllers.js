@@ -57,7 +57,7 @@ const backToProduction = async (req,res) => {
         const user_ = await user.findById(agent_product.id_ag);
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
-                arr: {where: user_.name,time: Date.now(),status:"Trả về CSSX do lâu không bán được"}}
+                arr: {where: user_.name,time: Date.now(),status:"Cũ, trả lại CSSX"}}
         });
         return res.json({
             success: 1
@@ -141,7 +141,7 @@ const callBackProduct = async (req,res) => {
         const sold_ = await sold.findOne({id_product: req.body.id_product});
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
-                arr: {where: sold_.customer,time: Date.now(),status:"Bị triệu hồi"}}
+                arr: {where: sold_.customer,time: Date.now(),status:"Lỗi cần triệu hồi"}}
         });
         return res.json({
             success: 1
@@ -181,7 +181,7 @@ const letServiceProduct = async (req,res) => {
         const user_ = await user.findById(service_product.id_ag);
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
-                arr: {where: user_.name,time: Date.now(),status:"Đưa đi bảo hành"}}
+                arr: {where: user_.name,time: Date.now(),status:"Lỗi cần bảo hành"}}
         });
         return res.json({
             success: 1
@@ -323,7 +323,7 @@ const returnProductToCustomer = async (req,res) => {
         await product.findByIdAndUpdate({_id: req.body.id_product},{status: "sv_return"});
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
-                arr: {where: pf.customer,time: Date.now(),status:"Đã trả về cho khách hàng"}}
+                arr: {where: pf.customer,time: Date.now(),status:"Đã trả lại cho khách hàng"}}
         });
         return res.json({
             success: 1

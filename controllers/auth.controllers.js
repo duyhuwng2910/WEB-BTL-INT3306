@@ -463,7 +463,7 @@ const inforCustomer = async (req,res) => {
     }
   
     try {
-        const sold_ = await sold.findById(req.query.id_product);
+        const sold_ = await sold.findOne({id_product: req.query.id_product});
         return res.json({
             success: 1,
             name: sold_.customer,

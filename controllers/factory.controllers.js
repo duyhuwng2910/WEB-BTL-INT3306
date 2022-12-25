@@ -162,7 +162,7 @@ const takeOldProduct = async (req,res) => {
         await backProduction.findByIdAndUpdate({_id: back_production._id},{status: "Đã nhận"});
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
-                arr: {where: user_.name,time: Date.now(),status:"CSSX đã nhận sản phẩm do cũ"}}
+                arr: {where: user_.name,time: Date.now(),status:"CSSX đã nhận sản phẩm cũ"}}
         });
         return res.json({
           success: 1

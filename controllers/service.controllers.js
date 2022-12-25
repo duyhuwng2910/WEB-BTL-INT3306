@@ -88,7 +88,7 @@ const letBackProductToFactory = async (req,res) => {
         await svFixing.deleteOne({id_product: fail_product._id});
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
-                arr: {where: user_.name,time: Date.now(),status:"Bị lỗi cần trả về CSSX"}}
+                arr: {where: user_.name,time: Date.now(),status:"Lỗi cần trả về CSSX"}}
         });
         return res.json({
             success: 1
