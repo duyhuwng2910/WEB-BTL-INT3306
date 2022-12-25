@@ -236,19 +236,21 @@ const getProfile = async (req,res) => {
 
 //Lấy ra profile của tài khoản (để tài khoản khác xem)
 const getProfileByName = async (req,res) => {
-    if (!req.query.name) {
+    if (!req.body.name) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-        const user_ = await user.findOne({name: req.query.name});
+        const user_ = await user.findOne({name: req.body.name});
         return res.json({
             success: 1,
             name: user_.name,
             address: user_.address,
             phone: user_.phone,
             bio: user_.bio,
-            verified: user_.verified
+            verified: user_.verified,
+            type: user_.type_user,
+            username: user_.username
         });
     } catch (error) {
         console.log(error);
@@ -457,17 +459,17 @@ const inforCustomer = async (req,res) => {
 
 //Tìm kiếm bằng từ khóa
 const searchUserByKeyword = async (req, res) => {
-    if (!req.query.type_user) {
+    if (!req.body.type_user) {
       return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
         const users = await user
             .find({
-                type_user: req.query.type_user,
+                type_user: req.body.type_user,
                 $or: [
-                    { name: new RegExp(req.query.keyword, 'i') },
-                    { email: req.query.keyword }
+                    { name: new RegExp(req.body.keyword, 'i') },
+                    { email: req.body.keyword }
                 ]
             });
             

@@ -11,9 +11,9 @@ router.get('/list_year_backagent', auth.staticByYearInBackAgent);
 router.get('/list_moth_erservice', auth.staticByMonthInErService);
 router.get('/list_year_erservice', auth.staticByYearInErService);
 router.get('/info_customer', auth.inforCustomer);
-router.get('/search_user_by_keyword', auth.searchUserByKeyword);
-router.get('/get_profile_by_name', auth.getProfileByName);
 
+router.post('/search_user_by_keyword', auth.searchUserByKeyword);
+router.post('/get_profile_by_name', auth.getProfileByName);
 router.post('/req_change_email', auth.reqChangeEmail);
 router.post('/confirm_email', auth.confirmEmail);
 router.post('/regit_email', auth.regiterEmail);
