@@ -455,6 +455,7 @@ const inforCustomer = async (req,res) => {
     }
 }
 
+//Tìm kiếm bằng từ khóa
 const searchUserByKeyword = async (req, res) => {
     if (!req.query.type_user) {
       return res.status(BAD_REQUEST).json({ success: 0 });
@@ -470,7 +471,6 @@ const searchUserByKeyword = async (req, res) => {
                 ]
             });
             
-    
         const returnUsers = users.map((_user) => {
             return {
                 _id: _user._id,

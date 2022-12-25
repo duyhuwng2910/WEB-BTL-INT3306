@@ -13,6 +13,7 @@ const erBackProduction = require('../models/erBackProduction');
 const { user } = require('../models/user');
 const { sortFunction } = require('./auth.controllers');
 const { UNKNOWN, BAD_REQUEST } = require('../config/HttpStatusCodes');
+const historicMove = require('../models/historicMove');
 
 //Lấy ra tất cả sản phẩm mới nhập về ở trong kho ****************
 const getNewProductIsConfirm = async (req,res) => {
@@ -53,6 +54,11 @@ const backToProduction = async (req,res) => {
             status: "Chưa nhận"
         }).save();
         await product.findOneAndUpdate({_id: req.body.id_product}, {status: 'back_production', namespace: "Cơ sở sản xuất"} );
+        const user_ = await user.findById(agent_product.id_ag);
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: user_.name,time: Date.now(),status:"Trả về CSSX do lâu không bán được"}}
+        });
         return res.json({
             success: 1
         })
@@ -78,6 +84,10 @@ const letProductSold = async (req,res) => {
             address: req.body.address
         }).save();
         await product.findOneAndUpdate({_id: req.body.id_product}, {status: 'sold'});
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: req.body.customer,time: Date.now(),status:"Đã bán"}}
+        });
         return res.json({
             success: 1
         }); 
@@ -95,8 +105,6 @@ const listSold = async (req,res) => {
     }
 
     try {
-        //const list_sold = await product.find({id_user: req.body.id_user}, { $or: [{status: "sold"}, {status: "sv_return"}]});
-        //
         let list = new Array;
         const product_sold = await sold.find({id_user: req.query.id_user});
         const product_return = await svReturn.find({id_user: req.query.id_user});
@@ -130,6 +138,11 @@ const callBackProduct = async (req,res) => {
             id_user: customer_product.id_ag,
             status: "Chưa nhận"
         }).save();
+        const sold_ = await sold.findOne({id_product: req.body.id_product});
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: sold_.customer,time: Date.now(),status:"Bị triệu hồi"}}
+        });
         return res.json({
             success: 1
         })
@@ -165,6 +178,11 @@ const letServiceProduct = async (req,res) => {
             status: 'er_service', 
             id_sv: service._id
         });
+        const user_ = await user.findById(service_product.id_ag);
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: user_.name,time: Date.now(),status:"Đưa đi bảo hành"}}
+        });
         return res.json({
             success: 1
         })
@@ -198,7 +216,7 @@ const getReCallingProduct = async (req,res) => {
     }
 }
 
-//Nhận sản phẩm triệu hồi từ khách hàng **********************
+//Nhận sản phẩm triệu hồi từ khách hàng và đem đi bảo hành**********************
 const takeRecallProduct = async (req,res) => {
     if (!req.body.id_product || !req.body.service_name) {
         return res.status(BAD_REQUEST).json({ success: 0 });
@@ -221,7 +239,12 @@ const takeRecallProduct = async (req,res) => {
                     arr: {service_name: req.body.service_name,time: Date.now()}}
             });
         }
-        await product.findOneAndUpdate({_id: req.body.id_product}, {status: 'er_service', id_sv: service._id});
+        const product_ = await product.findOneAndUpdate({_id: req.body.id_product}, {status: 'er_service', id_sv: service._id});
+        const user_ = await user.findById(product_.id_ag);
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: user_.name,time: Date.now(),status:"Triệu hồi thành công"}}
+        });
         return res.json({
             success: 1
         })
@@ -298,7 +321,10 @@ const returnProductToCustomer = async (req,res) => {
             customer: pf.customer
         }).save();
         await product.findByIdAndUpdate({_id: req.body.id_product},{status: "sv_return"});
-
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: pf.customer,time: Date.now(),status:"Đã trả về cho khách hàng"}}
+        });
         return res.json({
             success: 1
         });
@@ -365,7 +391,11 @@ const takeNewProducts = async (req,res) => {
     try {
         const bg_product = await backAgent.findOne({id_product: req.body.id_product});
         await backAgent.findByIdAndUpdate({_id: bg_product._id}, {agent_status: 'Đã nhận'});
-
+        const user_ = await user.findById(bg_product.id_ag);
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: user_.name,time: Date.now(),status:"Mới nhập từ CSSX"}}
+        });
         return res.json({
             success: 1
         })
@@ -409,7 +439,11 @@ const takeFixedProducts = async (req,res) => {
         const sv_fixed = await svFixed.findOne({id_product: req.body.id_product});
         await svFixed.findByIdAndUpdate({_id: sv_fixed._id}, {agent_status: 'Đã nhận'});
         await product.findByIdAndUpdate({_id: req.body.id_product}, {id_sv: ""})
-
+        const user_ = await user.findById(sv_fixed.id_ag);
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: user_.name,time: Date.now(),status:"Đã bảo hành xong"}}
+        });
         return res.json({
             success: 1
         })

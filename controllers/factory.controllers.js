@@ -3,6 +3,7 @@ const backAgent = require("../models/backAgent");
 const backProduction = require("../models/backProduction");
 const erBackFactory = require("../models/erBackFactory");
 const erBackProduction = require("../models/erBackProduction");
+const historicMove = require("../models/historicMove");
 const newProduct = require("../models/newProduct");
 const product = require("../models/product");
 const { user } = require("../models/user");
@@ -54,8 +55,12 @@ const sendProductToAgent = async (req,res) => {
                 id_pr: agent_product.id_pr,
                 agent_status: "Chưa nhận"
             }).save();
-
+            const user_ = await user.findById(agent_product.id_pr);
             await newProduct.deleteOne({id_product: req.body.id_product});
+            await historicMove.updateOne({id_product: req.body.id_product}, 
+                {$push : {
+                    arr: {where: user_.name,time: Date.now(),status:"Xuất cho đại lý"}}
+            });
 
             return res.json({
                 success: 1
@@ -80,6 +85,7 @@ const entryBatchProduct = async (req,res) => {
       }
     
     try {
+        const user_ = user.findById(req.body.id_user);
         let k = req.body.amount;
         for (let i = 0; i < k; i++) {
             const new_product = await new product({
@@ -99,6 +105,13 @@ const entryBatchProduct = async (req,res) => {
             await new newProduct({
                 id_product: new_product._id,
                 id_user: new_product.id_pr
+            }).save();
+            await new historicMove({
+                id_product: new_product._id,
+                arr:[{
+                    status: "Mới sản xuất",
+                    where: user_.name
+                }]
             }).save();
         }
 
@@ -145,8 +158,12 @@ const takeOldProduct = async (req,res) => {
     
     try {
         const back_production = await backProduction.findOne({id_product: req.body.id_product});
+        const user_ = await user.findById(back_production.id_pr);
         await backProduction.findByIdAndUpdate({_id: back_production._id},{status: "Đã nhận"});
-
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: user_.name,time: Date.now(),status:"CSSX đã nhận sản phẩm do cũ"}}
+        });
         return res.json({
           success: 1
         });
@@ -164,6 +181,7 @@ const takeErrorProduct = async (req,res) => {
     
     try {
         const error_product = await erBackFactory.findOne({id_product: req.body.id_product});
+        const user_ = await user.findById(error_product.id_pr);
         await new erBackProduction({
             id_product: error_product.id_product,
             id_ag: error_product.id_ag,
@@ -172,6 +190,10 @@ const takeErrorProduct = async (req,res) => {
         }).save();
         await erBackFactory.deleteOne({id_product: req.body.id_product});
         await product.findByIdAndUpdate({_id: req.body.id_product}, {status: "er_back_production"});
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: user_.name,time: Date.now(),status:"CSSX đã nhận sản phẩm lỗi"}}
+        });
         return res.json({
           success: 1
         });
@@ -194,7 +216,6 @@ const getErrorOrOldProductNonConfirm = async (req,res) => {
         for (let i = 0; i < er_back_factory.length; i++) {
             const bf = await product.findById(er_back_factory[i].id_product);
             if (bf) list.push(bf);
-            //console.log(bf);
         }
         for (let i = 0; i < back_production.length; i++) {
             const bp = await product.findById(back_production[i].id_product)

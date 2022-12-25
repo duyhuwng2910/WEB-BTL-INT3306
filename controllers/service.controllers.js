@@ -1,15 +1,17 @@
 const { BAD_REQUEST, UNKNOWN } = require("../config/HttpStatusCodes");
 const erBackFactory = require("../models/erBackFactory");
 const erBackProduction = require("../models/erBackProduction");
+const historicMove = require("../models/historicMove");
 const product = require("../models/product");
 const svFixed = require("../models/svFixed");
 const svFixing = require("../models/svFixing");
+const { user } = require("../models/user");
 const { sortFunction } = require("./auth.controllers");
 
 //Lấy ra tất cả sản phẩm đang được sửa chữa của 1 trung tâm bảo hành ************
 const getAllFixingProduct = async (req,res) => {
     if (!req.query.id_user) {
-        return res.status(BAD_REQUEST).json({ success: 0 });
+          return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
     try {
@@ -35,13 +37,14 @@ const getAllFixingProduct = async (req,res) => {
 const letBackProductToAgent = async (req,res) => {
     if (!req.body.id_product) {
         return res.status(BAD_REQUEST).json({ success: 0 });
-      }
+    }
     
     try {
         const fixed_product = await product.findByIdAndUpdate({_id: req.body.id_product},{ 
-          namespace:"Đại lý phân phối",
-          status: "sv_fixed"
+            namespace:"Đại lý phân phối",
+            status: "sv_fixed"
         });
+        const user_ = await user.findById(fixed_product.id_sv);
         await new svFixed({
             id_product: fixed_product._id,
             id_sv: fixed_product.id_sv,
@@ -49,9 +52,12 @@ const letBackProductToAgent = async (req,res) => {
             agent_status: "Chưa nhận"
         }).save();
         await svFixing.deleteOne({id_product: req.body.id_product});
-
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: user_.name,time: Date.now(),status:"Đã sửa xong"}}
+      });
         return res.json({
-          success: 1
+            success: 1
         });
     
     } catch (error) {
@@ -68,9 +74,9 @@ const letBackProductToFactory = async (req,res) => {
     
     try {
         const fail_product = await product.findByIdAndUpdate({_id: req.body.id_product},{
-          id_sv: "", 
-          namespace:"Cơ sở sản xuất",
-          status: "er_back_factory"
+            id_sv: "", 
+            namespace:"Cơ sở sản xuất",
+            status: "er_back_factory"
         });
         await new erBackFactory({
             id_product: fail_product._id,
@@ -78,10 +84,14 @@ const letBackProductToFactory = async (req,res) => {
             id_ag: fail_product.id_ag,
             id_sv: fail_product.id_sv
         }).save();
+        const user_ = await user.findById(fail_product.id_sv);
         await svFixing.deleteOne({id_product: fail_product._id});
-
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: user_.name,time: Date.now(),status:"Bị lỗi cần trả về CSSX"}}
+        });
         return res.json({
-          success: 1
+            success: 1
         });
     
     } catch (error) {
@@ -105,8 +115,8 @@ const getFixedProducts = async (req,res) => {
         }
 
         return res.json({
-          success: 1,
-          list: list
+            success: 1,
+            list: list
         });
     
     } catch (error) {
@@ -170,16 +180,20 @@ const takeServiceProduct = async (req,res) => {
 
     try {
         const product_service = await product.findByIdAndUpdate({_id: req.body.id_product},{
-          status:"sv_fixing", 
-          namespace: "Trung tâm bảo hành"
+            status:"sv_fixing", 
+            namespace: "Trung tâm bảo hành"
         });
+        const user_ = await user.findById(product_service.id_sv);
         await new svFixing({
             id_product: product_service._id,
             id_ag: product_service.id_ag,
             id_sv: product_service.id_sv,
             time: Date.now()
         }).save();
-
+        await historicMove.updateOne({id_product: req.body.id_product}, 
+            {$push : {
+                arr: {where: user_.name,time: Date.now(),status:"Đang bảo hành"}}
+        });
         return res.json({
             success: 1
         });
@@ -192,60 +206,60 @@ const takeServiceProduct = async (req,res) => {
 //Số lượng sản phẩm bảo hành thành công trong mỗi tháng (của tất cả các năm) của 1 trung tâm bảo hành
 const staticByMonthFixedProduct = async(req,res) => {
     if (!req.query.id_user) {
-      return res.status(BAD_REQUEST).json({ success: 0 });
+        return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-      const fixed_product = await svFixed.find({id_sv: req.query.id_user});
-      fixed_product.sort(sortFunction);
-      let list = new Array;
-      let k = 1;
-      for (let i = 1; i < fixed_product.length; i++) {
-        if (fixed_product[i].time.getUTCMonth() - fixed_product[i-1].time.getUTCMonth() == 0) k++; 
-        else {
-          let time = fixed_product[i-1].time.getUTCMonth().toString() + "/" + fixed_product[i-1].time.getUTCFullYear().toString();
-          list.push({time: time,amount: k});
-          k = 1;
+        const fixed_product = await svFixed.find({id_sv: req.query.id_user});
+        fixed_product.sort(sortFunction);
+        let list = new Array;
+        let k = 1;
+        for (let i = 1; i < fixed_product.length; i++) {
+            if (fixed_product[i].time.getUTCMonth() - fixed_product[i-1].time.getUTCMonth() == 0) k++; 
+            else {
+                let time = fixed_product[i-1].time.getUTCMonth().toString() + "/" + fixed_product[i-1].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
+                k = 1;
+            }
         }
-      }
-      return res.json({
-        success: 1,
-        list: list
-      });
+        return res.json({
+            success: 1,
+            list: list
+        });
   
     } catch (error) {
-      console.log(error);
-      return res.status(UNKNOWN).json({ success: 0});
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
     }
 }
 
 //Số lượng sản phẩm bảo hành thành công trong mỗi năm của 1 trung tâm bảo hành
 const staticByYearFixedProduct = async(req,res) => {
     if (!req.query.id_user) {
-      return res.status(BAD_REQUEST).json({ success: 0 });
+        return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
     try {
-      const fixed_product = await svFixed.find({id_sv: req.query.id_user});
-      fixed_product.sort(sortFunction);
-      let list = new Array;
-      let k = 1;
-      for (let i = 1; i < fixed_product.length; i++) {
-        if (fixed_product[i].time.getUTCFullYear() - fixed_product[i-1].time.getUTCFullYear() == 0) k++; 
-        else {
-          let time = fixed_product[i-1].time.getUTCFullYear().toString();
-          list.push({time: time,amount: k});
-          k = 1;
+        const fixed_product = await svFixed.find({id_sv: req.query.id_user});
+        fixed_product.sort(sortFunction);
+        let list = new Array;
+        let k = 1;
+        for (let i = 1; i < fixed_product.length; i++) {
+            if (fixed_product[i].time.getUTCFullYear() - fixed_product[i-1].time.getUTCFullYear() == 0) k++; 
+            else {
+                let time = fixed_product[i-1].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
+                k = 1;
+            }
         }
-      }
-      return res.json({
-        success: 1,
-        list: list
-      });
-  
+        return res.json({
+            success: 1,
+            list: list
+        });
+    
     } catch (error) {
-      console.log(error);
-      return res.status(UNKNOWN).json({ success: 0});
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
     }
 }
 
