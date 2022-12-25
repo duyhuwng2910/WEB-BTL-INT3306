@@ -234,6 +234,28 @@ const getProfile = async (req,res) => {
     }
 }
 
+//Lấy ra profile của tài khoản (để tài khoản khác xem)
+const getProfileByName = async (req,res) => {
+    if (!req.query.name) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+  
+    try {
+        const user_ = await user.findOne({name: req.query.name});
+        return res.json({
+            success: 1,
+            name: user_.name,
+            address: user_.address,
+            phone: user_.phone,
+            bio: user_.bio,
+            verified: user_.verified
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
 //Gửi đi thông tin cần chỉnh sửa của tài khoản
 const editProfile = async (req,res) => {
     if (!req.body.id_user) {
@@ -433,6 +455,37 @@ const inforCustomer = async (req,res) => {
     }
 }
 
+const searchUserByKeyword = async (req, res) => {
+    if (!req.query.type_user) {
+      return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+  
+    try {
+        const users = await user
+            .find({
+                type_user: req.query.type_user,
+                $or: [
+                    { name: new RegExp(req.query.keyword, 'i') },
+                    { email: req.query.keyword }
+                ]
+            });
+            
+    
+        const returnUsers = users.map((_user) => {
+            return {
+                _id: _user._id,
+                name: _user.name,
+            }
+      });
+    
+      return res.json({ success: 1, users: returnUsers });
+  
+    } catch (error) {
+      console.log(error);
+      return res.status(UNKNOWN).json({ success: 0 });
+    }
+}
+
 module.exports = {
     login,
     regiterEmail,
@@ -449,5 +502,7 @@ module.exports = {
     checkPasswordRecovery,
     changePassword,
     reqChangeEmail,
-    inforCustomer
+    inforCustomer,
+    getProfileByName,
+    searchUserByKeyword
 }

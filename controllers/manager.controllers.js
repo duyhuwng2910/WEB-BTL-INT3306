@@ -145,17 +145,17 @@ const createAccount = async (req, res) => {
 
 //Xóa tài khoản
 const deleteAccount = async (req, res) => {
-    if (!req.body.id_user) {
+    if (!req.body.username) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
     
     try {
-        const uid = await user.findById(req.body.id_user);
+        const uid = await user.findOne({username: req.body.username});
         if (uid) {
             return res.status(CONFLICT).json({ success: 0, errorMessage: "Tài khoản không tồn tại" });
         }
 
-        await transporter.sendMail(deleteAccountOP(uid.email));
+        if (uid.verified) await transporter.sendMail(deleteAccountOP(uid.email));
 
         await user.deleteOne({_id: uid._id});
   
