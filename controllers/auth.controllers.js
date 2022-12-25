@@ -13,6 +13,7 @@ const erService = require('../models/erService');
 const { transporter, verificationEmailOptions , resetPasswordEmailOptions } = require('../services/mail');
 const passwordRecovery = require('../models/passwordRecovery');
 const sold = require('../models/sold');
+const historicMove = require('../models/historicMove');
 
 //Đăng nhập
 const login = async (req, res) => {
@@ -310,6 +311,24 @@ const infoProduct = async (req,res) => {
     }
 }
 
+//Xem lịch sử di chuyển của sản phẩm
+const historicMoveProduct = async (req,res) => {
+    if (!req.query.id_product) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+  
+    try {
+        const history = await historicMove.findOne({id_product: req.query.id_product});
+        return res.json({
+            success: 1,
+            arr: history.arr
+        });
+      } catch (error) {
+          console.log(error);
+          return res.status(UNKNOWN).json({ success: 0});
+      }
+  }
+
 //sắp xếp theo thời gian
 function sortFunction(a,b){  
     var dateA = new Date(a.time).getTime();
@@ -506,5 +525,6 @@ module.exports = {
     reqChangeEmail,
     inforCustomer,
     getProfileByName,
-    searchUserByKeyword
+    searchUserByKeyword,
+    historicMoveProduct
 }
