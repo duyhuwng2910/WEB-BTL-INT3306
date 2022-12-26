@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt');
 const validator = require('validator');
 const { randomBytes } = require('node:crypto');
 
@@ -30,8 +29,7 @@ const login = async (req, res) => {
             return res.status(UNAUTHORIZED).json({ success: 0, username: username, errorMessage: USERNAME_INCORRECT });
         }
         
-        const match = bcrypt.compare(password, users.password);
-        if (!match) {
+        if (password != users.password) {
             return res.status(UNAUTHORIZED).json({ success: 0, errorMessage: PASSWORD_INCORRECT });
         }
     
@@ -284,27 +282,33 @@ const editProfile = async (req,res) => {
 
 //Lấy ra thông tin chi tiết của sản phẩm **********************
 const infoProduct = async (req,res) => {
-  if (!req.query.id_product) {
-      return res.status(BAD_REQUEST).json({ success: 0 });
-  }
+    if (!req.query.id_product) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
 
-  try {
-      const product_ = await product.findById(req.query.id_product);
-      return res.json({
-          success: 1,
-          name: product_.name,
-          color: product_.color,
-          namspace: product_.namespace,
-          status: product_.status,
-          bio: product_.bio,
-          id_ag: product_.id_ag,
-          id_sv: product_.id_sv,
-          id_pr: product_.id_pr,
-          batch: product_.batch,
-          st_service: product_.st_Service,
-          ToS: product_.ToS,
-          DoM: product_.DoM
-      });
+    try {
+        const product_ = await product.findById(req.query.id_product);
+      
+        const sold_ = await sold.findOne({id_product: product_._id});
+        if (checkOverTimeService(sold_,product_)) {
+            await product.findByIdAndUpdate({_id: product_._id}, {st_Service: "Hết bảo hành"});
+        }    
+        
+        return res.json({
+            success: 1,
+            name: product_.name,
+            color: product_.color,
+            namspace: product_.namespace,
+            status: product_.status,
+            bio: product_.bio,
+            id_ag: product_.id_ag,
+            id_sv: product_.id_sv,
+            id_pr: product_.id_pr,
+            batch: product_.batch,
+            st_service: product_.st_Service,
+            ToS: product_.ToS,
+            DoM: product_.DoM
+        });
     } catch (error) {
         console.log(error);
         return res.status(UNKNOWN).json({ success: 0});
@@ -329,8 +333,15 @@ const historicMoveProduct = async (req,res) => {
     }
 }
 
+//check thời gian bảo hành
+function checkOverTimeService(a,b){  //a sold ,b là product  
+    var dateA = b.ToS * 30 * 24 * 60 * 60 * 1000;
+    var dateB = new Date().getTime() - a.time;
+    return dateA < dateB ? 1 : -1;  
+}; 
+
 //sắp xếp theo thời gian
-function sortFunction(a,b){  
+function sortFunction(a,b){ 
     var dateA = new Date(a.time).getTime();
     var dateB = new Date(b.time).getTime();
     return dateA > dateB ? 1 : -1;  
@@ -542,5 +553,6 @@ module.exports = {
     inforCustomer,
     getProfileByName,
     searchUserByKeyword,
-    historicMoveProduct
+    historicMoveProduct,
+    checkOverTimeService
 }

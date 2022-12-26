@@ -11,7 +11,7 @@ const svFixed = require('../models/svFixed');
 const erBackFactory = require('../models/erBackFactory');
 const erBackProduction = require('../models/erBackProduction');
 const { user } = require('../models/user');
-const { sortFunction } = require('./auth.controllers');
+const { sortFunction, checkOverTimeService } = require('./auth.controllers');
 const { UNKNOWN, BAD_REQUEST } = require('../config/HttpStatusCodes');
 const historicMove = require('../models/historicMove');
 
@@ -110,10 +110,18 @@ const listSold = async (req,res) => {
         const product_return = await svReturn.find({id_user: req.query.id_user});
         for (let i = 0; i < product_sold.length; i++) {
             const ps = await product.findOne({_id:product_sold[i].id_product, status: "sold"});
+            const sold_ = await sold.findOne({id_product: ps._id});
+            if (checkOverTimeService(sold_,ps)) {
+                await product.findByIdAndUpdate({_id: ps._id}, {st_Service: "Hết bảo hành"});
+            }
             if (ps) list.push(ps);
         }
         for (let i = 0; i < product_return.length; i++) {
-            const psr = await product.findOne({_id:product_return[i].id_product, status: "sv_return"})
+            const psr = await product.findOne({_id:product_return[i].id_product, status: "sv_return"});
+            const sold_ = await sold.findOne({id_product: psr._id});
+            if (checkOverTimeService(sold_,psr)) {
+                await product.findByIdAndUpdate({_id: psr._id}, {st_Service: "Hết bảo hành"});
+            }
             if (psr) list.push(psr);
         }
         return res.json({
@@ -151,6 +159,31 @@ const callBackProduct = async (req,res) => {
         return res.status(UNKNOWN).json({ success: 0 });
     }
 }
+
+// //Nhận sản phẩm lỗi cần bảo hành từ khách hàng kiểm tra còn bảo hành thì nhận, hết bảo hành thì không nhận
+// const checkOverTime = async (req,res) => {
+//     if (!req.body.id_product) {
+//         return res.status(BAD_REQUEST).json({ success: 0 });
+//     }
+
+//     try {
+//         const _product = await product.findById(id_product);
+//         const sold_ = await sold.findOne({id_product: psr._id});
+//         if (checkOverTimeService(sold_,_product)) {
+//             await product.findByIdAndUpdate({_id: _product._id}, {st_Service: "Hết bảo hành"});
+//             return res.json({
+//                 success: 0,
+//                 errorMessenger: "Sản phẩm đã hết bảo hành"
+//             });
+//         }
+//         return res.json({
+//             success: 1
+//         });
+//     } catch(error) {
+//         console.log(error);
+//         return res.status(UNKNOWN).json({ success: 0 });
+//     }
+// }
 
 //Đưa sản phẩm đi bảo hành  **********************************
 const letServiceProduct = async (req,res) => {
@@ -570,5 +603,6 @@ module.exports = {
     staticByYearSoldProduct,
     getErrorProducts,
     getFixedProductsNonConfirm,
-    takeFixedProducts
+    takeFixedProducts,
+    //checkOverTime
 }
