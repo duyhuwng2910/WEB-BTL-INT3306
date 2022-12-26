@@ -500,7 +500,7 @@ const staticByMonthSoldProduct = async(req,res) => {
                 list.push({time: time,amount: k});
                 k = 1;
             }
-            if (i == er_service.length - 1) {
+            if (i == sold_product.length - 1) {
                 let time = (sold_product[i].time.getUTCMonth() + 1).toString() + "/" + sold_product[i].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
             }
@@ -535,7 +535,7 @@ const staticByYearSoldProduct = async(req,res) => {
                 list.push({time: time,amount: k});
                 k = 1;
             }
-            if (i == er_service.length - 1) {
+            if (i == sold_product.length - 1) {
                 let time = (sold_product[i].time.getUTCMonth() + 1).toString() + "/" + sold_product[i].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
             }
