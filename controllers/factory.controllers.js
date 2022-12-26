@@ -272,11 +272,16 @@ const staticByMonthNewProduct = async(req,res) => {
         let list = new Array;
         let k = 1;
         for (let i = 1; i < new_product.length; i++) {
+            console.log(new_product[i].time.getUTCMonth());
             if (new_product[i].time.getUTCMonth() - new_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = new_product[i-1].time.getUTCMonth().toString() + "/" + new_product[i-1].time.getUTCFullYear().toString();
+                let time = (new_product[i-1].time.getUTCMonth() + 1).toString() + "/" + new_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
+            }
+            if (i == new_product.length - 1) {
+                let time = (new_product[i].time.getUTCMonth() + 1).toString() + "/" + new_product[i].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
             }
         }
         return res.json({
@@ -308,6 +313,10 @@ const staticByYearNewProduct = async(req,res) => {
                 list.push({time: time,amount: k});
                 k = 1;
             }
+            if (i == new_product.length - 1) {
+                let time = new_product[i-1].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
+            }
         }
         return res.json({
             success: 1,
@@ -334,9 +343,13 @@ const staticByMonthBackProduct = async(req,res) => {
         for (let i = 1; i < back_product.length; i++) {
             if (back_product[i].time.getUTCMonth() - back_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = back_product[i-1].time.getUTCMonth().toString() + "/" + back_product[i-1].time.getUTCFullYear().toString();
+                let time = (back_product[i-1].time.getUTCMonth() + 1).toString() + "/" + back_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
+            }
+            if (i == back_product.length - 1) {
+                let time = (back_product[i].time.getUTCMonth() + 1).toString() + "/" + back_product[i].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
             }
         }
         return res.json({
@@ -367,6 +380,10 @@ const staticByYearBackProduct = async(req,res) => {
                 let time = back_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
+            }
+            if (i == back_product.length - 1) {
+                let time = back_product[i-1].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
             }
         }
         return res.json({

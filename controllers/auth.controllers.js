@@ -350,11 +350,15 @@ const staticByMonthInBackAgent = async(req,res) => {
         for (let i = 1; i < back_agent.length; i++) {
             if (back_agent[i].time.getUTCMonth() - back_agent[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = back_agent[i-1].time.getUTCMonth().toString() + "/" + back_agent[i-1].time.getUTCFullYear().toString();
+                let time = (back_agent[i-1].time.getUTCMonth() + 1).toString() + "/" + back_agent[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
             }
-          }
+            if (i == back_agent.length - 1) {
+                let time = (back_agent[i].time.getUTCMonth() + 1).toString() + "/" + back_agent[i].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
+            }
+        }
         return res.json({
             success: 1,
             list: list
@@ -384,6 +388,10 @@ const staticByYearInBackAgent = async(req,res) => {
                 list.push({time: time,amount: k});
                 k = 1;
             }
+            if (i == back_agent.length - 1) {
+                let time = back_agent[i-1].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
+            }
         }
         return res.json({
             success: 1,
@@ -410,9 +418,13 @@ const staticByMonthInErService = async(req,res) => {
         for (let i = 1; i < er_service.length; i++) {
             if (er_service[i].time.getUTCMonth() - er_service[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = er_service[i-1].time.getUTCMonth().toString() + "/" + er_service[i-1].time.getUTCFullYear().toString();
+                let time = (er_service[i-1].time.getUTCMonth() + 1).toString() + "/" + er_service[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
+            }
+            if (i == er_service.length - 1) {
+                let time = (er_service[i].time.getUTCMonth() + 1).toString() + "/" + er_service[i].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
             }
         }
         return res.json({
@@ -437,12 +449,16 @@ const staticByYearInErService = async(req,res) => {
         er_service.sort(sortFunction);
         let list = new Array;
         let k = 1;
-        for (let i = 1; i < fixed_product.length; i++) {
+        for (let i = 1; i < er_service.length; i++) {
             if (er_service[i].time.getUTCFullYear() - er_service[i-1].time.getUTCFullYear() == 0) k++; 
             else {
                 let time = er_service[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
+            }
+            if (i == er_service.length - 1) {
+                let time = er_service[i-1].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
             }
         }
         return res.json({

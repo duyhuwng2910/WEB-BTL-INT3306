@@ -493,11 +493,16 @@ const staticByMonthSoldProduct = async(req,res) => {
         let list = new Array;
         let k = 1;
         for (let i = 1; i < sold_product.length; i++) {
+            console.log(sold_product[i].time.getUTCMonth());
             if (sold_product[i].time.getUTCMonth() - sold_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = sold_product[i-1].time.getUTCMonth().toString() + "/" + sold_product[i-1].time.getUTCFullYear().toString();
+                let time = (sold_product[i-1].time.getUTCMonth() + 1).toString() + "/" + sold_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
+            }
+            if (i == er_service.length - 1) {
+                let time = (sold_product[i].time.getUTCMonth() + 1).toString() + "/" + sold_product[i].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
             }
         }
         return res.json({
@@ -523,11 +528,16 @@ const staticByYearSoldProduct = async(req,res) => {
         let list = new Array;
         let k = 1;
         for (let i = 1; i < sold_product.length; i++) {
-            if (sold_product[i].time.getUTCFullYear() - sold_product[i-1].time.getUTCFullYear() == 0) k++; 
+            console.log(sold_product[i].time.getUTCMonth());
+            if (sold_product[i].time.getUTCMonth() - sold_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = sold_product[i-1].time.getUTCFullYear().toString();
+                let time = (sold_product[i-1].time.getUTCMonth() + 1).toString() + "/" + sold_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
+            }
+            if (i == er_service.length - 1) {
+                let time = (sold_product[i].time.getUTCMonth() + 1).toString() + "/" + sold_product[i].time.getUTCFullYear().toString();
+                list.push({time: time,amount: k});
             }
         }
         return res.json({
