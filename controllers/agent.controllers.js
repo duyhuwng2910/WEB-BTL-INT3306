@@ -529,12 +529,12 @@ const staticByMonthSoldProduct = async(req,res) => {
             console.log(sold_product[i].time.getUTCMonth());
             if (sold_product[i].time.getUTCMonth() - sold_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = (sold_product[i-1].time.getUTCMonth() + 1).toString() + "/" + sold_product[i-1].time.getUTCFullYear().toString();
+                let time = (sold_product[i-1].time.getUTCMonth() + 1).toString(); //+ "/" + sold_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
             }
             if (i == sold_product.length - 1) {
-                let time = (sold_product[i].time.getUTCMonth() + 1).toString() + "/" + sold_product[i].time.getUTCFullYear().toString();
+                let time = (sold_product[i].time.getUTCMonth() + 1).toString(); //+ "/" + sold_product[i].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
             }
         }
