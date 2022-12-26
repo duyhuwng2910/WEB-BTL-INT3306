@@ -151,7 +151,8 @@ const deleteAccount = async (req, res) => {
     
     try {
         const uid = await user.findOne({username: req.body.username});
-        if (uid) {
+        console.log(uid)
+        if (!uid) {
             return res.status(CONFLICT).json({ success: 0, errorMessage: "Tài khoản không tồn tại" });
         }
 
@@ -167,11 +168,35 @@ const deleteAccount = async (req, res) => {
     }
 }
 
+const getProfileByUsername = async (req,res) => {
+    if (!req.query.username) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+  
+    try {
+        const user_ = await user.findOne({username: req.query.username});
+        return res.json({
+            success: 1,
+            name: user_.name,
+            address: user_.address,
+            phone: user_.phone,
+            bio: user_.bio,
+            verified: user_.verified,
+            type: user_.type_user,
+            username: user_.username
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
 
 module.exports = {
     getAllUser,  
     getListProduct,
     createAccount,
     getAllProduct,
-    deleteAccount
+    deleteAccount,
+    getProfileByUsername
 }
