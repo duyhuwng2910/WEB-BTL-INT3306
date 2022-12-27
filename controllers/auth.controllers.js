@@ -288,10 +288,12 @@ const infoProduct = async (req,res) => {
 
     try {
         const product_ = await product.findById(req.query.id_product);
-      
+        
         const sold_ = await sold.findOne({id_product: product_._id});
-        if (checkOverTimeService(sold_,product_)) {
-            await product.findByIdAndUpdate({_id: product_._id}, {st_Service: "Hết bảo hành"});
+        if (sold_) {
+            if (checkOverTimeService(sold_,product_)) {
+                await product.findByIdAndUpdate({_id: product_._id}, {st_Service: "Hết bảo hành"});
+            }   
         }    
         
         return res.json({

@@ -20,10 +20,9 @@ const getNewProducts = async (req,res) => {
         let list = new Array;
         for (let i = 0; i < new_product.length; i++) {
             const _product = await product.findOne({_id: new_product[i].id_product, status: 'new_product'});
-            list.push(_product);
+            if (_product) list.push(_product);
         }
         
-        console.log(list);
         return res.json({
           success: 1,
           list: list
