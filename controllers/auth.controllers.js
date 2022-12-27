@@ -383,8 +383,8 @@ const staticByMonthInBackAgent = async(req,res) => {
                 k = 1;
             }
             if (i == back_agent.length - 1) {
-                let month = (back_agent[i-1].time.getUTCMonth() + 1).toString(); 
-                let year = back_agent[i-1].time.getUTCFullYear().toString();
+                let month = (back_agent[i].time.getUTCMonth() + 1).toString(); 
+                let year = back_agent[i].time.getUTCFullYear().toString();
                 list.push({month: month,year: year, amount: k});
             }
         }
@@ -419,14 +419,14 @@ const staticByQuarterInBackAgent = async(req,res) => {
         for (let i = 1; i < back_agent.length; i++) {
             if (back_agent[i].time.getUTCMonth() - back_agent[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let quater = sortTime(back_agent[0].time.getUTCMonth() + 1); 
-                let year = back_agent[0].time.getUTCFullYear().toString();
+                let quater = sortTime(back_agent[i-1].time.getUTCMonth() + 1); 
+                let year = back_agent[i-1].time.getUTCFullYear().toString();
                 list.push({quater: quater,year: year, amount: k});
                 k = 1;
             }
             if (i == back_agent.length - 1) {
-                let quater = sortTime(back_agent[0].time.getUTCMonth() + 1); 
-                let year = back_agent[0].time.getUTCFullYear().toString();
+                let quater = sortTime(back_agent[i].time.getUTCMonth() + 1); 
+                let year = back_agent[i].time.getUTCFullYear().toString();
                 list.push({quater: quater,year: year, amount: k});
             }
         }
@@ -505,8 +505,8 @@ const staticByMonthInErService = async(req,res) => {
                 k = 1;
             }
             if (i == er_service.length - 1) {
-                let month = (er_service[i-1].time.getUTCMonth() + 1).toString(); 
-                let year = er_service[i-1].time.getUTCFullYear().toString();
+                let month = (er_service[i].time.getUTCMonth() + 1).toString(); 
+                let year = er_service[i].time.getUTCFullYear().toString();
                 list.push({month: month,year: year, amount: k});
             }
         }
@@ -540,14 +540,14 @@ const staticByQuarterInErService = async(req,res) => {
         for (let i = 1; i < er_service.length; i++) {
             if (er_service[i].time.getUTCMonth() - er_service[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let quater = sortTime(er_service[0].time.getUTCMonth() + 1); 
-                let year = er_service[0].time.getUTCFullYear().toString();
+                let quater = sortTime(er_service[i-1].time.getUTCMonth() + 1); 
+                let year = er_service[i-1].time.getUTCFullYear().toString();
                 list.push({quater: quater,year: year, amount: k});
                 k = 1;
             }
             if (i == er_service.length - 1) {
-                let quater = sortTime(er_service[0].time.getUTCMonth() + 1); 
-                let year = er_service[0].time.getUTCFullYear().toString();
+                let quater = sortTime(er_service[i].time.getUTCMonth() + 1); 
+                let year = er_service[i].time.getUTCFullYear().toString();
                 list.push({quater: quater,year: year, amount: k});
             }
         }

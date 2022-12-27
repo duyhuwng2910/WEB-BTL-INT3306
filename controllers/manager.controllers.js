@@ -86,6 +86,18 @@ const staticAllProduct = async (req, res) => {
     }
 
     await listProduct.deleteMany({});
+    await new listProduct({
+        namespace:"Cơ sở sản xuất",
+        arr: []
+    }).save();
+    await new listProduct({
+        namespace:"Đại lý phân phối",
+        arr: []
+    }).save();
+    await new listProduct({
+        namespace:"Trung tâm bảo hành",
+        arr: []
+    }).save();
 
     try {
         const manager = await user.findById(req.query.id_user);

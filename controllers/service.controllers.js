@@ -228,8 +228,8 @@ const staticByMonthFixedProduct = async(req,res) => {
                 k = 1;
             }
             if (i == fixed_product.length - 1) {
-                let month = (fixed_product[i-1].time.getUTCMonth() + 1).toString(); 
-                let year = fixed_product[i-1].time.getUTCFullYear().toString();
+                let month = (fixed_product[i].time.getUTCMonth() + 1).toString(); 
+                let year = fixed_product[i].time.getUTCFullYear().toString();
                 list.push({month: month,year: year, amount: k});
             }
         }
@@ -263,14 +263,14 @@ const staticByQuarterFixedProduct = async(req,res) => {
         for (let i = 1; i < fixed_product.length; i++) {
             if (fixed_product[i].time.getUTCMonth() - fixed_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let quater = sortTime(fixed_product[0].time.getUTCMonth() + 1); 
-                let year = fixed_product[0].time.getUTCFullYear().toString();
+                let quater = sortTime(fixed_product[i-1].time.getUTCMonth() + 1); 
+                let year = fixed_product[i-1].time.getUTCFullYear().toString();
                 list.push({quater: quater,year: year, amount: k});
                 k = 1;
             }
             if (i == fixed_product.length - 1) {
-                let quater = sortTime(fixed_product[0].time.getUTCMonth() + 1); 
-                let year = fixed_product[0].time.getUTCFullYear().toString();
+                let quater = sortTime(fixed_product[i].time.getUTCMonth() + 1); 
+                let year = fixed_product[i].time.getUTCFullYear().toString();
                 list.push({quater: quater,year: year, amount: k});
             }
         }

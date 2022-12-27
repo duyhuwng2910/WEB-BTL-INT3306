@@ -337,14 +337,14 @@ const staticByQuarterNewProduct = async(req,res) => {
         for (let i = 1; i < new_product.length; i++) {
             if (new_product[i].time.getUTCMonth() - new_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let quater = sortTime(new_product[0].time.getUTCMonth() + 1); 
-                let year = new_product[0].time.getUTCFullYear().toString();
+                let quater = sortTime(new_product[i-1].time.getUTCMonth() + 1); 
+                let year = new_product[i-1].time.getUTCFullYear().toString();
                 list.push({quater: quater,year: year, amount: k});
                 k = 1;
             }
             if (i == new_product.length - 1) {
-                let quater = sortTime(new_product[0].time.getUTCMonth() + 1); 
-                let year = new_product[0].time.getUTCFullYear().toString();
+                let quater = sortTime(new_product[i].time.getUTCMonth() + 1); 
+                let year = new_product[i].time.getUTCFullYear().toString();
                 list.push({quater: quater,year: year, amount: k});
             }
         }
@@ -457,14 +457,14 @@ const staticByQuarterBackProduct = async(req,res) => {
         for (let i = 1; i < back_product.length; i++) {
             if (back_product[i].time.getUTCMonth() - back_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let quater = sortTime(back_product[0].time.getUTCMonth() + 1); 
-                let year = back_product[0].time.getUTCFullYear().toString();
+                let quater = sortTime(back_product[i-1].time.getUTCMonth() + 1); 
+                let year = back_product[i-1].time.getUTCFullYear().toString();
                 list.push({quater: quater,year: year, amount: k});
                 k = 1;
             }
             if (i == back_product.length - 1) {
-                let quater = sortTime(back_product[0].time.getUTCMonth() + 1); 
-                let year = back_product[0].time.getUTCFullYear().toString();
+                let quater = sortTime(back_product[i].time.getUTCMonth() + 1); 
+                let year = back_product[i].time.getUTCFullYear().toString();
                 list.push({quater: quater,year: year, amount: k});
             }
         }
