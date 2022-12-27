@@ -6,7 +6,7 @@ const product = require("../models/product");
 const svFixed = require("../models/svFixed");
 const svFixing = require("../models/svFixing");
 const { user } = require("../models/user");
-const { sortFunction } = require("./auth.controllers");
+const { sortFunction, sortTime } = require("./auth.controllers");
 
 //Lấy ra tất cả sản phẩm đang được sửa chữa của 1 trung tâm bảo hành ************
 const getAllFixingProduct = async (req,res) => {

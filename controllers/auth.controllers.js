@@ -354,7 +354,7 @@ function sortTime(a){
     if (0 < a && a <= 3) return "1";
     if (3 < a && a <= 6) return "2";
     if (6 < a && a <= 9) return "3";
-    if (9 < a && a <=12) return "4";
+    return "4";
 }
 
 //Số lượng sản phẩm xuất ra cho các đại lý/ số lượng sản phẩm nhập về của 1 đại lý trong mỗi tháng (của tất cả các năm)
