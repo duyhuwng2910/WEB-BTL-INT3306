@@ -374,7 +374,7 @@ const getBackProduction = async (req,res) => {
     }
 
     try {
-        const product_backproduction = await backProduction.find({id_user: req.query.id_user});
+        const product_backproduction = await backProduction.find({id_ag: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < product_backproduction.length; i++) {
             const _product = await product.findById(product_backproduction[i].id_product);

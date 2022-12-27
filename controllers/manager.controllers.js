@@ -151,7 +151,6 @@ const deleteAccount = async (req, res) => {
     
     try {
         const uid = await user.findOne({username: req.body.username});
-        console.log(uid)
         if (!uid) {
             return res.status(CONFLICT).json({ success: 0, errorMessage: "Tài khoản không tồn tại" });
         }
