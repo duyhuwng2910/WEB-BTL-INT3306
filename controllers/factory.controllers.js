@@ -336,7 +336,7 @@ const staticByMonthBackProduct = async(req,res) => {
     }
   
     try {
-        const back_product = await backProduction.find({id_user: req.query.id_user});
+        const back_product = await backProduction.find({id_pr: req.query.id_user});
         back_product.sort(sortFunction);
         let list = new Array;
         let k = 1;
@@ -370,7 +370,7 @@ const staticByYearBackProduct = async(req,res) => {
     }
   
     try {
-        const back_product = await backProduction.find({id_user: req.query.id_user});
+        const back_product = await backProduction.find({id_pr: req.query.id_user});
         back_product.sort(sortFunction);
         let list = new Array;
         let k = 1;
