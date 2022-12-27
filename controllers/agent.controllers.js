@@ -110,19 +110,23 @@ const listSold = async (req,res) => {
         const product_return = await svReturn.find({id_user: req.query.id_user});
         for (let i = 0; i < product_sold.length; i++) {
             const ps = await product.findOne({_id:product_sold[i].id_product, status: "sold"});
-            const sold_ = await sold.findOne({id_product: ps._id});
-            if (checkOverTimeService(sold_,ps)) {
-                await product.findByIdAndUpdate({_id: ps._id}, {st_Service: "Hết bảo hành"});
+            if (ps) {
+                const sold_ = await sold.findOne({id_product: ps._id});
+                if (checkOverTimeService(sold_,ps)) {
+                    await product.findByIdAndUpdate({_id: ps._id}, {st_Service: "Hết bảo hành"});
+                }
+                list.push(ps);
             }
-            if (ps) list.push(ps);
         }
         for (let i = 0; i < product_return.length; i++) {
             const psr = await product.findOne({_id:product_return[i].id_product, status: "sv_return"});
-            const sold_ = await sold.findOne({id_product: psr._id});
-            if (checkOverTimeService(sold_,psr)) {
-                await product.findByIdAndUpdate({_id: psr._id}, {st_Service: "Hết bảo hành"});
+            if (psr) {
+                const sold_ = await sold.findOne({id_product: psr._id});
+                if (checkOverTimeService(sold_,psr)) {
+                    await product.findByIdAndUpdate({_id: psr._id}, {st_Service: "Hết bảo hành"});
+                }
+                list.push(psr);
             }
-            if (psr) list.push(psr);
         }
         return res.json({
             success: 1,
@@ -295,15 +299,24 @@ const listServiceProduct = async (req,res) => {
 
     try {
         let list = new Array;
-        const er_service = await erService.find({id_user: req.query.id_user});
-        const sv_fixing = await svFixing.find({id_user: req.query.id_user});
-        for (let i = 0; i < er_service.length; i++) {
-            const es = await product.findOne({_id: er_service[i].id_product})
-            if (es) list.push(es);
-        }
-        for (let i = 0; i < sv_fixing.length; i++) {
-            const sf = await product.findOne({_id: sv_fixing[i].id_product})
-            if (sf) list.push(sf);
+        // const er_service = await erService.find({id_user: req.query.id_user});
+        // const sv_fixing = await svFixing.find({id_user: req.query.id_user});
+        // for (let i = 0; i < er_service.length; i++) {
+        //     const es = await product.findOne({_id: er_service[i].id_product})
+        //     if (es) list.push(es);
+        // }
+        // for (let i = 0; i < sv_fixing.length; i++) {
+        //     const sf = await product.findOne({_id: sv_fixing[i].id_product})
+        //     if (sf) list.push(sf);
+        // }
+        const er_service = await product.find({id_ag: req.query.id_user, status: 'er_service'})
+        for (let i = 0; i < er_service.length; i++) list.push(er_service[i]);
+        const sv_fixing = await product.find({id_ag: req.query.id_user, status: 'sv_fixing'})
+        for (let i = 0; i < er_service.length; i++) list.push(sv_fixing[i]);
+        const sv_fixed = await svFixed.find({id_ag: req.query.id_user, agent_status: 'chưa nhận'});
+        for (let i = 0; i < sv_fixed.length; i++) {
+            const _product = await product.findOne({_id: sv_fixed[i].id_product});
+            list.push(_product);
         }
         return res.json({
             success: 1,
@@ -325,7 +338,7 @@ const getFixedProductsIsConfirm = async (req,res) => {
         const sv_fixed = await svFixed.find({id_ag: req.query.id_user, agent_status: 'Đã nhận'});
         let list = new Array;
         for (let i = 0; i < sv_fixed.length; i++) {
-            const _product = await product.findOne({_id: sv_fixed[i].id_product});
+            const _product = await product.findOne({_id: sv_fixed[i].id_product, status: 'sv_fixed'});
             list.push(_product);
         }
 
@@ -374,7 +387,7 @@ const getBackProduction = async (req,res) => {
     }
 
     try {
-        const product_backproduction = await backProduction.find({id_user: req.query.id_user});
+        const product_backproduction = await backProduction.find({id_ag: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < product_backproduction.length; i++) {
             const _product = await product.findById(product_backproduction[i].id_product);
@@ -529,12 +542,12 @@ const staticByMonthSoldProduct = async(req,res) => {
             console.log(sold_product[i].time.getUTCMonth());
             if (sold_product[i].time.getUTCMonth() - sold_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = (sold_product[i-1].time.getUTCMonth() + 1).toString() + "/" + sold_product[i-1].time.getUTCFullYear().toString();
+                let time = (sold_product[i-1].time.getUTCMonth() + 1).toString(); //+ "/" + sold_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
             }
             if (i == sold_product.length - 1) {
-                let time = (sold_product[i].time.getUTCMonth() + 1).toString() + "/" + sold_product[i].time.getUTCFullYear().toString();
+                let time = (sold_product[i].time.getUTCMonth() + 1).toString(); //+ "/" + sold_product[i].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
             }
         }
@@ -562,14 +575,14 @@ const staticByYearSoldProduct = async(req,res) => {
         let k = 1;
         for (let i = 1; i < sold_product.length; i++) {
             console.log(sold_product[i].time.getUTCMonth());
-            if (sold_product[i].time.getUTCMonth() - sold_product[i-1].time.getUTCMonth() == 0) k++; 
+            if (sold_product[i].time.getUTCFullYear() - sold_product[i-1].time.getUTCFullYear() == 0) k++; 
             else {
-                let time = (sold_product[i-1].time.getUTCMonth() + 1).toString() + "/" + sold_product[i-1].time.getUTCFullYear().toString();
+                let time = sold_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
             }
             if (i == sold_product.length - 1) {
-                let time = (sold_product[i].time.getUTCMonth() + 1).toString() + "/" + sold_product[i].time.getUTCFullYear().toString();
+                let time = sold_product[i].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
             }
         }

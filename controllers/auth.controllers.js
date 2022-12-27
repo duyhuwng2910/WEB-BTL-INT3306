@@ -288,10 +288,12 @@ const infoProduct = async (req,res) => {
 
     try {
         const product_ = await product.findById(req.query.id_product);
-      
+        
         const sold_ = await sold.findOne({id_product: product_._id});
-        if (checkOverTimeService(sold_,product_)) {
-            await product.findByIdAndUpdate({_id: product_._id}, {st_Service: "Hết bảo hành"});
+        if (sold_) {
+            if (checkOverTimeService(sold_,product_)) {
+                await product.findByIdAndUpdate({_id: product_._id}, {st_Service: "Hết bảo hành"});
+            }   
         }    
         
         return res.json({
@@ -354,19 +356,20 @@ const staticByMonthInBackAgent = async(req,res) => {
     }
 
     try {
-        const back_agent = await backAgent.find({id_ag: req.query.id_user});
+        var back_agent = await backAgent.find({id_ag: req.query.id_user});
+        if (back_agent.length == 0) back_agent = await backAgent.find({id_pr: req.query.id_user});
         back_agent.sort(sortFunction);
         let list = new Array;
         let k = 1;
         for (let i = 1; i < back_agent.length; i++) {
             if (back_agent[i].time.getUTCMonth() - back_agent[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = (back_agent[i-1].time.getUTCMonth() + 1).toString() + "/" + back_agent[i-1].time.getUTCFullYear().toString();
+                let time = (back_agent[i-1].time.getUTCMonth() + 1).toString(); //+ "/" + back_agent[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
             }
             if (i == back_agent.length - 1) {
-                let time = (back_agent[i].time.getUTCMonth() + 1).toString() + "/" + back_agent[i].time.getUTCFullYear().toString();
+                let time = (back_agent[i].time.getUTCMonth() + 1).toString(); //+ "/" + back_agent[i].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
             }
         }
@@ -388,7 +391,8 @@ const staticByYearInBackAgent = async(req,res) => {
     }
 
     try {
-        const back_agent = await backAgent.find({id_ag: req.query.id_user});
+        var back_agent = await backAgent.find({id_ag: req.query.id_user});
+        if (back_agent.length == 0) back_agent = await backAgent.find({id_pr: req.query.id_user});
         back_agent.sort(sortFunction);
         let list = new Array;
         let k = 1;
@@ -429,12 +433,12 @@ const staticByMonthInErService = async(req,res) => {
         for (let i = 1; i < er_service.length; i++) {
             if (er_service[i].time.getUTCMonth() - er_service[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = (er_service[i-1].time.getUTCMonth() + 1).toString() + "/" + er_service[i-1].time.getUTCFullYear().toString();
+                let time = (er_service[i-1].time.getUTCMonth() + 1).toString(); //+ "/" + er_service[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
             }
             if (i == er_service.length - 1) {
-                let time = (er_service[i].time.getUTCMonth() + 1).toString() + "/" + er_service[i].time.getUTCFullYear().toString();
+                let time = (er_service[i].time.getUTCMonth() + 1).toString(); //+ "/" + er_service[i].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
             }
         }

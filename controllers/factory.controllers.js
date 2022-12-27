@@ -5,6 +5,7 @@ const erBackFactory = require("../models/erBackFactory");
 const erBackProduction = require("../models/erBackProduction");
 const historicMove = require("../models/historicMove");
 const newProduct = require("../models/newProduct");
+const portfolio = require("../models/portfolio");
 const product = require("../models/product");
 const { user } = require("../models/user");
 const { sortFunction } = require("./auth.controllers");
@@ -19,11 +20,10 @@ const getNewProducts = async (req,res) => {
         const new_product = await newProduct.find({id_user: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < new_product.length; i++) {
-            const _product = await product.findById(new_product[i].id_product);
-            list.push(_product);
+            const _product = await product.findOne({_id: new_product[i].id_product, status: 'new_product'});
+            if (_product) list.push(_product);
         }
         
-        console.log(list);
         return res.json({
           success: 1,
           list: list
@@ -56,7 +56,7 @@ const sendProductToAgent = async (req,res) => {
                 agent_status: "Chưa nhận"
             }).save();
             const user_ = await user.findById(agent_product.id_pr);
-            await newProduct.deleteOne({id_product: req.body.id_product});
+            //await newProduct.deleteOne({id_product: req.body.id_product});
             await historicMove.updateOne({id_product: req.body.id_product}, 
                 {$push : {
                     arr: {where: user_.name,time: Date.now(),status:"Xuất cho đại lý"}}
@@ -80,7 +80,7 @@ const sendProductToAgent = async (req,res) => {
 //Nhập các lô sản phẩm vào kho ****************
 const entryBatchProduct = async (req,res) => {
     if (!req.body.id_user || !req.body.batch || !req.body.name || !req.body.color || !req.body.amount
-        || !req.body.DoM || !req.body.ToS || !req.body.bio) {
+        || !req.body.DoM || !req.body.ToS || !req.body.bio || !req.body.capacity) {
         return res.status(BAD_REQUEST).json({ success: 0 });
       }
     
@@ -93,6 +93,7 @@ const entryBatchProduct = async (req,res) => {
                 id_ag: "",
                 id_sv: "",
                 batch: req.body.batch,
+                capacity: req.body.capacity,
                 status: "new_product",
                 name: req.body.name,
                 color: req.body.color,
@@ -112,6 +113,22 @@ const entryBatchProduct = async (req,res) => {
                     status: "Mới sản xuất",
                     where: user_.name
                 }]
+            }).save();
+        }
+        const portfo = await portfolio.findOne({name: req.body.name});
+        if (portfo) {
+            let tf = false;
+            for (let j = 0; j < portfo.model.length; j++) {
+                if (portfo.model[j] == req.body.capacity) {
+                    tf = true;
+                    break;
+                }
+            }
+            if (!tf) await portfolio.updateOne({_id: portfo._id}, {$push: {model : req.body.capacity}});
+        } else {
+            await new portfolio({
+                name: req.body.name,
+                model:[req.body.capacity]
             }).save();
         }
 
@@ -275,12 +292,12 @@ const staticByMonthNewProduct = async(req,res) => {
             console.log(new_product[i].time.getUTCMonth());
             if (new_product[i].time.getUTCMonth() - new_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = (new_product[i-1].time.getUTCMonth() + 1).toString() + "/" + new_product[i-1].time.getUTCFullYear().toString();
+                let time = (new_product[i-1].time.getUTCMonth() + 1).toString();// + "/" + new_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
             }
             if (i == new_product.length - 1) {
-                let time = (new_product[i].time.getUTCMonth() + 1).toString() + "/" + new_product[i].time.getUTCFullYear().toString();
+                let time = (new_product[i].time.getUTCMonth() + 1).toString();// + "/" + new_product[i].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
             }
         }
@@ -336,19 +353,19 @@ const staticByMonthBackProduct = async(req,res) => {
     }
   
     try {
-        const back_product = await backProduction.find({id_user: req.query.id_user});
+        const back_product = await backProduction.find({id_pr: req.query.id_user});
         back_product.sort(sortFunction);
         let list = new Array;
         let k = 1;
         for (let i = 1; i < back_product.length; i++) {
             if (back_product[i].time.getUTCMonth() - back_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = (back_product[i-1].time.getUTCMonth() + 1).toString() + "/" + back_product[i-1].time.getUTCFullYear().toString();
+                let time = (back_product[i-1].time.getUTCMonth() + 1).toString();// + "/" + back_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
             }
             if (i == back_product.length - 1) {
-                let time = (back_product[i].time.getUTCMonth() + 1).toString() + "/" + back_product[i].time.getUTCFullYear().toString();
+                let time = (back_product[i].time.getUTCMonth() + 1).toString();// + "/" + back_product[i].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
             }
         }
@@ -370,7 +387,7 @@ const staticByYearBackProduct = async(req,res) => {
     }
   
     try {
-        const back_product = await backProduction.find({id_user: req.query.id_user});
+        const back_product = await backProduction.find({id_pr: req.query.id_user});
         back_product.sort(sortFunction);
         let list = new Array;
         let k = 1;
