@@ -19,7 +19,7 @@ const getNewProducts = async (req,res) => {
         const new_product = await newProduct.find({id_user: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < new_product.length; i++) {
-            const _product = await product.findById(new_product[i].id_product);
+            const _product = await product.findOne({_id: new_product[i].id_product, status: 'new_product'});
             list.push(_product);
         }
         
@@ -56,7 +56,7 @@ const sendProductToAgent = async (req,res) => {
                 agent_status: "Chưa nhận"
             }).save();
             const user_ = await user.findById(agent_product.id_pr);
-            await newProduct.deleteOne({id_product: req.body.id_product});
+            //await newProduct.deleteOne({id_product: req.body.id_product});
             await historicMove.updateOne({id_product: req.body.id_product}, 
                 {$push : {
                     arr: {where: user_.name,time: Date.now(),status:"Xuất cho đại lý"}}

@@ -295,15 +295,24 @@ const listServiceProduct = async (req,res) => {
 
     try {
         let list = new Array;
-        const er_service = await erService.find({id_user: req.query.id_user});
-        const sv_fixing = await svFixing.find({id_user: req.query.id_user});
-        for (let i = 0; i < er_service.length; i++) {
-            const es = await product.findOne({_id: er_service[i].id_product})
-            if (es) list.push(es);
-        }
-        for (let i = 0; i < sv_fixing.length; i++) {
-            const sf = await product.findOne({_id: sv_fixing[i].id_product})
-            if (sf) list.push(sf);
+        // const er_service = await erService.find({id_user: req.query.id_user});
+        // const sv_fixing = await svFixing.find({id_user: req.query.id_user});
+        // for (let i = 0; i < er_service.length; i++) {
+        //     const es = await product.findOne({_id: er_service[i].id_product})
+        //     if (es) list.push(es);
+        // }
+        // for (let i = 0; i < sv_fixing.length; i++) {
+        //     const sf = await product.findOne({_id: sv_fixing[i].id_product})
+        //     if (sf) list.push(sf);
+        // }
+        const er_service = await product.find({id_ag: req.query.id_user, status: 'er_service'})
+        if (er_service.length > 0) list.push(er_service);
+        const sv_fixing = await product.find({id_ag: req.query.id_user, status: 'sv_fixing'})
+        if (sv_fixing.length > 0) list.push(sv_fixing);
+        const sv_fixed = await svFixed.find({id_ag: req.query.id_user, agent_status: 'chưa nhận'});
+        for (let i = 0; i < sv_fixed.length; i++) {
+            const _product = await product.findOne({_id: sv_fixed[i].id_product});
+            list.push(_product);
         }
         return res.json({
             success: 1,
@@ -325,7 +334,7 @@ const getFixedProductsIsConfirm = async (req,res) => {
         const sv_fixed = await svFixed.find({id_ag: req.query.id_user, agent_status: 'Đã nhận'});
         let list = new Array;
         for (let i = 0; i < sv_fixed.length; i++) {
-            const _product = await product.findOne({_id: sv_fixed[i].id_product});
+            const _product = await product.findOne({_id: sv_fixed[i].id_product, status: 'sv_fixed'});
             list.push(_product);
         }
 
@@ -562,14 +571,14 @@ const staticByYearSoldProduct = async(req,res) => {
         let k = 1;
         for (let i = 1; i < sold_product.length; i++) {
             console.log(sold_product[i].time.getUTCMonth());
-            if (sold_product[i].time.getUTCMonth() - sold_product[i-1].time.getUTCMonth() == 0) k++; 
+            if (sold_product[i].time.getUTCFullYear() - sold_product[i-1].time.getUTCFullYear() == 0) k++; 
             else {
-                let time = (sold_product[i-1].time.getUTCMonth() + 1).toString() + "/" + sold_product[i-1].time.getUTCFullYear().toString();
+                let time = sold_product[i-1].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
                 k = 1;
             }
             if (i == sold_product.length - 1) {
-                let time = (sold_product[i].time.getUTCMonth() + 1).toString() + "/" + sold_product[i].time.getUTCFullYear().toString();
+                let time = sold_product[i].time.getUTCFullYear().toString();
                 list.push({time: time,amount: k});
             }
         }
