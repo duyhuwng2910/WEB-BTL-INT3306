@@ -7,6 +7,7 @@ router.get('/fixed_product', service.getFixedProducts);
 router.get('/error_product', service.getErrorProducts);
 router.get('/service_product', service.getServiceProducts);
 router.get('/list_month_fixedproduct', service.staticByMonthFixedProduct);
+router.get('/list_quarter_fixedproduct', service.staticByQuarterFixedProduct);
 router.get('/list_year_fixedproduct', service.staticByYearFixedProduct);
 
 router.post('/send_product_to_agent', service.letBackProductToAgent);

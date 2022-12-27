@@ -7,9 +7,11 @@ router.get('/check_passwordrc', auth.checkPasswordRecovery);
 router.get('/my_profile', auth.getProfile);
 router.get('/infor_product', auth.infoProduct);
 router.get('/list_month_backagent', auth.staticByMonthInBackAgent);
+router.get('/list_quarter_backagent', auth.staticByQuarterInBackAgent);
 router.get('/list_year_backagent', auth.staticByYearInBackAgent);
-router.get('/list_moth_erservice', auth.staticByMonthInErService);//Bug
-router.get('/list_year_erservice', auth.staticByYearInErService);//Bug
+router.get('/list_moth_erservice', auth.staticByMonthInErService);
+router.get('/list_quarter_erservice', auth.staticByQuarterInErService);
+router.get('/list_year_erservice', auth.staticByYearInErService);
 router.get('/infor_customer', auth.inforCustomer);
 router.get('/history', auth.historicMoveProduct);
 

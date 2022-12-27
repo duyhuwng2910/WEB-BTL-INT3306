@@ -10,6 +10,7 @@ router.get('/list_fixed_product_nc', agent.getFixedProductsNonConfirm);
 router.get('/list_back_production', agent.getBackProduction);
 router.get('/list_new_product_nc', agent.getNewProductNonConfirm);
 router.get('/list_month_soldproduct', agent.staticByMonthSoldProduct);
+router.get('/list_quarter_soldproduct', agent.staticByQuarterSoldProduct);
 router.get('/list_year_soldproduct', agent.staticByYearSoldProduct);
 router.get('/list_error_product', agent.getErrorProducts);
 router.get('/list_fixed_product_ic', agent.getFixedProductsIsConfirm);

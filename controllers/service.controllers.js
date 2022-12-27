@@ -214,16 +214,64 @@ const staticByMonthFixedProduct = async(req,res) => {
         fixed_product.sort(sortFunction);
         let list = new Array;
         let k = 1;
+        if (fixed_product.length == 1) {
+            let month = (fixed_product[0].time.getUTCMonth() + 1).toString(); 
+            let year = fixed_product[0].time.getUTCFullYear().toString();
+            list.push({month: month,quater: quater, year: year, amount: k});
+        }
         for (let i = 1; i < fixed_product.length; i++) {
             if (fixed_product[i].time.getUTCMonth() - fixed_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = (fixed_product[i-1].time.getUTCMonth() + 1).toString();// + "/" + fixed_product[i-1].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let month = (fixed_product[i-1].time.getUTCMonth() + 1).toString(); 
+                let year = fixed_product[i-1].time.getUTCFullYear().toString();
+                list.push({month: month,year: year, amount: k});
                 k = 1;
             }
             if (i == fixed_product.length - 1) {
-                let time = (fixed_product[i].time.getUTCMonth() + 1).toString();// + "/" + fixed_product[i].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let month = (fixed_product[i-1].time.getUTCMonth() + 1).toString(); 
+                let year = fixed_product[i-1].time.getUTCFullYear().toString();
+                list.push({month: month,year: year, amount: k});
+            }
+        }
+        return res.json({
+            success: 1,
+            list: list
+        });
+  
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
+//Số lượng sản phẩm bảo hành thành công trong mỗi quý (của tất cả các năm) của 1 trung tâm bảo hành
+const staticByQuarterFixedProduct = async(req,res) => {
+    if (!req.query.id_user) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+  
+    try {
+        const fixed_product = await svFixed.find({id_sv: req.query.id_user});
+        fixed_product.sort(sortFunction);
+        let list = new Array;
+        let k = 1;
+        if (fixed_product.length == 1) {
+            let quater = sortTime(fixed_product[0].time.getUTCMonth() + 1); 
+            let year = fixed_product[0].time.getUTCFullYear().toString();
+            list.push({quater: quater,year: year, amount: k});
+        }
+        for (let i = 1; i < fixed_product.length; i++) {
+            if (fixed_product[i].time.getUTCMonth() - fixed_product[i-1].time.getUTCMonth() == 0) k++; 
+            else {
+                let quater = sortTime(fixed_product[0].time.getUTCMonth() + 1); 
+                let year = fixed_product[0].time.getUTCFullYear().toString();
+                list.push({quater: quater,year: year, amount: k});
+                k = 1;
+            }
+            if (i == fixed_product.length - 1) {
+                let quater = sortTime(fixed_product[0].time.getUTCMonth() + 1); 
+                let year = fixed_product[0].time.getUTCFullYear().toString();
+                list.push({quater: quater,year: year, amount: k});
             }
         }
         return res.json({
@@ -248,16 +296,20 @@ const staticByYearFixedProduct = async(req,res) => {
         fixed_product.sort(sortFunction);
         let list = new Array;
         let k = 1;
+        if (fixed_product.length == 1) {
+            let year = fixed_product[0].time.getUTCFullYear().toString();
+            list.push({year: year,amount: k})
+        }
         for (let i = 1; i < fixed_product.length; i++) {
             if (fixed_product[i].time.getUTCFullYear() - fixed_product[i-1].time.getUTCFullYear() == 0) k++; 
             else {
-                let time = fixed_product[i-1].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let year = fixed_product[i-1].time.getUTCFullYear().toString();
+                list.push({year: year,amount: k});
                 k = 1;
             }
             if (i == fixed_product.length - 1) {
-                let time = fixed_product[i-1].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let year = fixed_product[i].time.getUTCFullYear().toString();
+                list.push({year: year,amount: k});
             }
         }
         return res.json({
@@ -280,5 +332,6 @@ module.exports = {
     takeServiceProduct,
     getServiceProducts,
     staticByMonthFixedProduct,
-    staticByYearFixedProduct
+    staticByYearFixedProduct,
+    staticByQuarterFixedProduct
 }

@@ -349,6 +349,14 @@ function sortFunction(a,b){
     return dateA > dateB ? 1 : -1;  
 }; 
 
+//chia quý của 1 năm
+function sortTime(a){
+    if (0 < a && a <= 3) return "1";
+    if (3 < a && a <= 6) return "2";
+    if (6 < a && a <= 9) return "3";
+    if (9 < a && a <=12) return "4";
+}
+
 //Số lượng sản phẩm xuất ra cho các đại lý/ số lượng sản phẩm nhập về của 1 đại lý trong mỗi tháng (của tất cả các năm)
 const staticByMonthInBackAgent = async(req,res) => {
     if (!req.query.id_user) {
@@ -361,16 +369,65 @@ const staticByMonthInBackAgent = async(req,res) => {
         back_agent.sort(sortFunction);
         let list = new Array;
         let k = 1;
+        if (back_agent.length == 1) {
+            let month = (back_agent[0].time.getUTCMonth() + 1).toString(); 
+            let year = back_agent[0].time.getUTCFullYear().toString();
+            list.push({month: month,quater: quater, year: year, amount: k});
+        }
         for (let i = 1; i < back_agent.length; i++) {
             if (back_agent[i].time.getUTCMonth() - back_agent[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = (back_agent[i-1].time.getUTCMonth() + 1).toString(); //+ "/" + back_agent[i-1].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let month = (back_agent[i-1].time.getUTCMonth() + 1).toString(); 
+                let year = back_agent[i-1].time.getUTCFullYear().toString();
+                list.push({month: month,year: year, amount: k});
                 k = 1;
             }
             if (i == back_agent.length - 1) {
-                let time = (back_agent[i].time.getUTCMonth() + 1).toString(); //+ "/" + back_agent[i].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let month = (back_agent[i-1].time.getUTCMonth() + 1).toString(); 
+                let year = back_agent[i-1].time.getUTCFullYear().toString();
+                list.push({month: month,year: year, amount: k});
+            }
+        }
+        return res.json({
+            success: 1,
+            list: list
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+} 
+
+//Số lượng sản phẩm xuất ra cho các đại lý/ số lượng sản phẩm nhập về của 1 đại lý trong mỗi quý (của tất cả các năm)
+const staticByQuarterInBackAgent = async(req,res) => {
+    if (!req.query.id_user) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+
+    try {
+        var back_agent = await backAgent.find({id_ag: req.query.id_user});
+        if (back_agent.length == 0) back_agent = await backAgent.find({id_pr: req.query.id_user});
+        back_agent.sort(sortFunction);
+        let list = new Array;
+        let k = 1;
+        if (back_agent.length == 1) {
+            let quater = sortTime(back_agent[0].time.getUTCMonth() + 1); 
+            let year = back_agent[0].time.getUTCFullYear().toString();
+            list.push({quater: quater,year: year, amount: k});
+        }
+        for (let i = 1; i < back_agent.length; i++) {
+            if (back_agent[i].time.getUTCMonth() - back_agent[i-1].time.getUTCMonth() == 0) k++; 
+            else {
+                let quater = sortTime(back_agent[0].time.getUTCMonth() + 1); 
+                let year = back_agent[0].time.getUTCFullYear().toString();
+                list.push({quater: quater,year: year, amount: k});
+                k = 1;
+            }
+            if (i == back_agent.length - 1) {
+                let quater = sortTime(back_agent[0].time.getUTCMonth() + 1); 
+                let year = back_agent[0].time.getUTCFullYear().toString();
+                list.push({quater: quater,year: year, amount: k});
             }
         }
         return res.json({
@@ -396,16 +453,20 @@ const staticByYearInBackAgent = async(req,res) => {
         back_agent.sort(sortFunction);
         let list = new Array;
         let k = 1;
+        if (back_agent.length == 1) {
+            let year = back_agent[0].time.getUTCFullYear().toString();
+            list.push({year: year,amount: k})
+        }
         for (let i = 1; i < back_agent.length; i++) {
             if (back_agent[i].time.getUTCFullYear() - back_agent[i-1].time.getUTCFullYear() == 0) k++; 
             else {
-                let time = back_agent[i-1].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let year = back_agent[i-1].time.getUTCFullYear().toString();
+                list.push({year: year,amount: k});
                 k = 1;
             }
             if (i == back_agent.length - 1) {
-                let time = back_agent[i-1].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let year = back_agent[i].time.getUTCFullYear().toString();
+                list.push({year: year,amount: k});
             }
         }
         return res.json({
@@ -430,16 +491,64 @@ const staticByMonthInErService = async(req,res) => {
         er_service.sort(sortFunction);
         let list = new Array;
         let k = 1;
+        if (er_service.length == 1) {
+            let month = (er_service[0].time.getUTCMonth() + 1).toString(); 
+            let year = er_service[0].time.getUTCFullYear().toString();
+            list.push({month: month,quater: quater, year: year, amount: k});
+        }
         for (let i = 1; i < er_service.length; i++) {
             if (er_service[i].time.getUTCMonth() - er_service[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let time = (er_service[i-1].time.getUTCMonth() + 1).toString(); //+ "/" + er_service[i-1].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let month = (er_service[i-1].time.getUTCMonth() + 1).toString(); 
+                let year = er_service[i-1].time.getUTCFullYear().toString();
+                list.push({month: month,year: year, amount: k});
                 k = 1;
             }
             if (i == er_service.length - 1) {
-                let time = (er_service[i].time.getUTCMonth() + 1).toString(); //+ "/" + er_service[i].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let month = (er_service[i-1].time.getUTCMonth() + 1).toString(); 
+                let year = er_service[i-1].time.getUTCFullYear().toString();
+                list.push({month: month,year: year, amount: k});
+            }
+        }
+        return res.json({
+            success: 1,
+            list: list
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
+//Số lượng sản phẩm cần bảo hành của 1 trung tâm bảo hành/ số lượng sản phẩm đưa đi bảo hành của 1 đại lý trong mỗi quý (của tất cả các năm)
+const staticByQuarterInErService = async(req,res) => {
+    if (!req.query.id_user) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+
+    try {
+        const er_service = await erService.find({id_user: req.query.id_user});
+        er_service.sort(sortFunction);
+        let list = new Array;
+        let k = 1;
+        if (er_service.length == 1) {
+            let quater = sortTime(er_service[0].time.getUTCMonth() + 1); 
+            let year = er_service[0].time.getUTCFullYear().toString();
+            list.push({quater: quater,year: year, amount: k});
+        }
+        for (let i = 1; i < er_service.length; i++) {
+            if (er_service[i].time.getUTCMonth() - er_service[i-1].time.getUTCMonth() == 0) k++; 
+            else {
+                let quater = sortTime(er_service[0].time.getUTCMonth() + 1); 
+                let year = er_service[0].time.getUTCFullYear().toString();
+                list.push({quater: quater,year: year, amount: k});
+                k = 1;
+            }
+            if (i == er_service.length - 1) {
+                let quater = sortTime(er_service[0].time.getUTCMonth() + 1); 
+                let year = er_service[0].time.getUTCFullYear().toString();
+                list.push({quater: quater,year: year, amount: k});
             }
         }
         return res.json({
@@ -464,16 +573,20 @@ const staticByYearInErService = async(req,res) => {
         er_service.sort(sortFunction);
         let list = new Array;
         let k = 1;
+        if (er_service.length == 1) {
+            let year = er_service[0].time.getUTCFullYear().toString();
+            list.push({year: year,amount: k})
+        }
         for (let i = 1; i < er_service.length; i++) {
             if (er_service[i].time.getUTCFullYear() - er_service[i-1].time.getUTCFullYear() == 0) k++; 
             else {
-                let time = er_service[i-1].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let year = er_service[i-1].time.getUTCFullYear().toString();
+                list.push({year: year,amount: k});
                 k = 1;
             }
             if (i == er_service.length - 1) {
-                let time = er_service[i-1].time.getUTCFullYear().toString();
-                list.push({time: time,amount: k});
+                let year = er_service[i].time.getUTCFullYear().toString();
+                list.push({year: year,amount: k});
             }
         }
         return res.json({
@@ -558,5 +671,8 @@ module.exports = {
     getProfileByName,
     searchUserByKeyword,
     historicMoveProduct,
-    checkOverTimeService
+    checkOverTimeService,
+    sortTime,
+    staticByQuarterInBackAgent,
+    staticByQuarterInErService
 }
