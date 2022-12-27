@@ -413,14 +413,18 @@ const getNewProductNonConfirm = async (req,res) => {
     try {
         const agent_product = await backAgent.find({id_ag: req.query.id_user, agent_status: 'Chưa nhận'});
         let list = new Array;
+        let listProducerName = new Array;
         for (let i = 0; i < agent_product.length; i++) {
             const _product = await product.findById(agent_product[i].id_product);
             list.push(_product);
+            const producer_name = await user.findById(_product.id_pr);
+            listProducerName.push({pr_name: producer_name.name});
         }
 
         return res.json({
             success: 1,
-            list: list 
+            list: list,
+            listProducerName: listProducerName
         })
     } catch(error) {
         console.log(error);
@@ -460,14 +464,18 @@ const getFixedProductsNonConfirm = async (req,res) => {
     try {
         const agent_product = await svFixed.find({id_ag: req.query.id_user, agent_status: 'Chưa nhận'});
         let list = new Array;
+        let listServiceName = new Array;
         for (let i = 0; i < agent_product.length; i++) {
             const _product = await product.findById(agent_product[i].id_product);
             list.push(_product);
+            const service_name = await user.findById(_product.id_sv);
+            listServiceName.push({sv_name: service_name.name});
         }
 
         return res.json({
             success: 1,
-            list: list 
+            list: list,
+            listServiceName: listServiceName
         })
     } catch(error) {
         console.log(error);
@@ -541,7 +549,7 @@ const staticByMonthSoldProduct = async(req,res) => {
         if (sold_product.length == 1) {
             let month = (sold_product[0].time.getUTCMonth() + 1).toString(); 
             let year = sold_product[0].time.getUTCFullYear().toString();
-            list.push({month: month,quater: quater, year: year, amount: k});
+            list.push({month: month, year: year, amount: k});
         }
         for (let i = 1; i < sold_product.length; i++) {
             if (sold_product[i].time.getUTCMonth() - sold_product[i-1].time.getUTCMonth() == 0) k++; 
@@ -580,22 +588,22 @@ const staticByQuarterSoldProduct = async(req,res) => {
         let list = new Array;
         let k = 1;
         if (sold_product.length == 1) {
-            let quater = sortTime(sold_product[0].time.getUTCMonth() + 1); 
+            let quarter = sortTime(sold_product[0].time.getUTCMonth() + 1); 
             let year = sold_product[0].time.getUTCFullYear().toString();
-            list.push({quater: quater,year: year, amount: k});
+            list.push({quarter: quarter,year: year, amount: k});
         }
         for (let i = 1; i < sold_product.length; i++) {
             if (sold_product[i].time.getUTCMonth() - sold_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let quater = sortTime(sold_product[i-1].time.getUTCMonth() + 1); 
+                let quarter = sortTime(sold_product[i-1].time.getUTCMonth() + 1); 
                 let year = sold_product[i-1].time.getUTCFullYear().toString();
-                list.push({quater: quater,year: year, amount: k});
+                list.push({quarter: quarter,year: year, amount: k});
                 k = 1;
             }
             if (i == sold_product.length - 1) {
-                let quater = sortTime(sold_product[i].time.getUTCMonth() + 1); 
+                let quarter = sortTime(sold_product[i].time.getUTCMonth() + 1); 
                 let year = sold_product[i].time.getUTCFullYear().toString();
-                list.push({quater: quater,year: year, amount: k});
+                list.push({quarter: quarter,year: year, amount: k});
             }
         }
         return res.json({

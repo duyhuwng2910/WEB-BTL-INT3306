@@ -13,6 +13,7 @@ const { transporter, verificationEmailOptions , resetPasswordEmailOptions } = re
 const passwordRecovery = require('../models/passwordRecovery');
 const sold = require('../models/sold');
 const historicMove = require('../models/historicMove');
+const svFixing = require('../models/svFixing');
 
 //Đăng nhập
 const login = async (req, res) => {
@@ -309,7 +310,8 @@ const infoProduct = async (req,res) => {
             batch: product_.batch,
             st_service: product_.st_Service,
             ToS: product_.ToS,
-            DoM: product_.DoM
+            DoM: product_.DoM,
+            capacity: product_.capacity
         });
     } catch (error) {
         console.log(error);
@@ -372,7 +374,7 @@ const staticByMonthInBackAgent = async(req,res) => {
         if (back_agent.length == 1) {
             let month = (back_agent[0].time.getUTCMonth() + 1).toString(); 
             let year = back_agent[0].time.getUTCFullYear().toString();
-            list.push({month: month,quater: quater, year: year, amount: k});
+            list.push({month: month, year: year, amount: k});
         }
         for (let i = 1; i < back_agent.length; i++) {
             if (back_agent[i].time.getUTCMonth() - back_agent[i-1].time.getUTCMonth() == 0) k++; 
@@ -412,22 +414,22 @@ const staticByQuarterInBackAgent = async(req,res) => {
         let list = new Array;
         let k = 1;
         if (back_agent.length == 1) {
-            let quater = sortTime(back_agent[0].time.getUTCMonth() + 1); 
+            let quarter = sortTime(back_agent[0].time.getUTCMonth() + 1); 
             let year = back_agent[0].time.getUTCFullYear().toString();
-            list.push({quater: quater,year: year, amount: k});
+            list.push({quarter: quarter,year: year, amount: k});
         }
         for (let i = 1; i < back_agent.length; i++) {
             if (back_agent[i].time.getUTCMonth() - back_agent[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let quater = sortTime(back_agent[i-1].time.getUTCMonth() + 1); 
+                let quarter = sortTime(back_agent[i-1].time.getUTCMonth() + 1); 
                 let year = back_agent[i-1].time.getUTCFullYear().toString();
-                list.push({quater: quater,year: year, amount: k});
+                list.push({quarter: quarter,year: year, amount: k});
                 k = 1;
             }
             if (i == back_agent.length - 1) {
-                let quater = sortTime(back_agent[i].time.getUTCMonth() + 1); 
+                let quarter = sortTime(back_agent[i].time.getUTCMonth() + 1); 
                 let year = back_agent[i].time.getUTCFullYear().toString();
-                list.push({quater: quater,year: year, amount: k});
+                list.push({quarter: quarter,year: year, amount: k});
             }
         }
         return res.json({
@@ -480,33 +482,33 @@ const staticByYearInBackAgent = async(req,res) => {
     }
 }
 
-//Số lượng sản phẩm cần bảo hành của 1 trung tâm bảo hành/ số lượng sản phẩm đưa đi bảo hành của 1 đại lý trong mỗi tháng (của tất cả các năm)
+//Số lượng sản phẩm cần bảo hành của 1 trung tâm bảo hành (của tất cả các năm)
 const staticByMonthInErService = async(req,res) => {
     if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     try {
-        const er_service = await erService.find({id_user: req.query.id_user});
-        er_service.sort(sortFunction);
+        const sv_fixing = await svFixing.find({id_sv: req.query.id_user});
+        sv_fixing.sort(sortFunction);
         let list = new Array;
         let k = 1;
-        if (er_service.length == 1) {
-            let month = (er_service[0].time.getUTCMonth() + 1).toString(); 
-            let year = er_service[0].time.getUTCFullYear().toString();
-            list.push({month: month,quater: quater, year: year, amount: k});
+        if (sv_fixing.length == 1) {
+            let month = (sv_fixing[0].time.getUTCMonth() + 1).toString(); 
+            let year = sv_fixing[0].time.getUTCFullYear().toString();
+            list.push({month: month, year: year, amount: k});
         }
-        for (let i = 1; i < er_service.length; i++) {
-            if (er_service[i].time.getUTCMonth() - er_service[i-1].time.getUTCMonth() == 0) k++; 
+        for (let i = 1; i < sv_fixing.length; i++) {
+            if (sv_fixing[i].time.getUTCMonth() - sv_fixing[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let month = (er_service[i-1].time.getUTCMonth() + 1).toString(); 
-                let year = er_service[i-1].time.getUTCFullYear().toString();
+                let month = (sv_fixing[i-1].time.getUTCMonth() + 1).toString(); 
+                let year = sv_fixing[i-1].time.getUTCFullYear().toString();
                 list.push({month: month,year: year, amount: k});
                 k = 1;
             }
-            if (i == er_service.length - 1) {
-                let month = (er_service[i].time.getUTCMonth() + 1).toString(); 
-                let year = er_service[i].time.getUTCFullYear().toString();
+            if (i == sv_fixing.length - 1) {
+                let month = (sv_fixing[i].time.getUTCMonth() + 1).toString(); 
+                let year = sv_fixing[i].time.getUTCFullYear().toString();
                 list.push({month: month,year: year, amount: k});
             }
         }
@@ -528,27 +530,27 @@ const staticByQuarterInErService = async(req,res) => {
     }
 
     try {
-        const er_service = await erService.find({id_user: req.query.id_user});
-        er_service.sort(sortFunction);
+        const sv_fixing = await svFixing.find({id_sv: req.query.id_user});
+        sv_fixing.sort(sortFunction);
         let list = new Array;
         let k = 1;
-        if (er_service.length == 1) {
-            let quater = sortTime(er_service[0].time.getUTCMonth() + 1); 
-            let year = er_service[0].time.getUTCFullYear().toString();
-            list.push({quater: quater,year: year, amount: k});
+        if (sv_fixing.length == 1) {
+            let quarter = sortTime(sv_fixing[0].time.getUTCMonth() + 1); 
+            let year = sv_fixing[0].time.getUTCFullYear().toString();
+            list.push({quarter: quarter,year: year, amount: k});
         }
-        for (let i = 1; i < er_service.length; i++) {
-            if (er_service[i].time.getUTCMonth() - er_service[i-1].time.getUTCMonth() == 0) k++; 
+        for (let i = 1; i < sv_fixing.length; i++) {
+            if (sv_fixing[i].time.getUTCMonth() - sv_fixing[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let quater = sortTime(er_service[i-1].time.getUTCMonth() + 1); 
-                let year = er_service[i-1].time.getUTCFullYear().toString();
-                list.push({quater: quater,year: year, amount: k});
+                let quarter = sortTime(sv_fixing[i-1].time.getUTCMonth() + 1); 
+                let year = sv_fixing[i-1].time.getUTCFullYear().toString();
+                list.push({quarter: quarter,year: year, amount: k});
                 k = 1;
             }
-            if (i == er_service.length - 1) {
-                let quater = sortTime(er_service[i].time.getUTCMonth() + 1); 
-                let year = er_service[i].time.getUTCFullYear().toString();
-                list.push({quater: quater,year: year, amount: k});
+            if (i == sv_fixing.length - 1) {
+                let quarter = sortTime(sv_fixing[i].time.getUTCMonth() + 1); 
+                let year = sv_fixing[i].time.getUTCFullYear().toString();
+                list.push({quarter: quarter,year: year, amount: k});
             }
         }
         return res.json({
@@ -569,23 +571,23 @@ const staticByYearInErService = async(req,res) => {
     }
 
     try {
-        const er_service = await erService.find({id_user: req.query.id_user});
-        er_service.sort(sortFunction);
+        const sv_fixing = await svFixing.find({id_sv: req.query.id_user});
+        sv_fixing.sort(sortFunction);
         let list = new Array;
         let k = 1;
-        if (er_service.length == 1) {
-            let year = er_service[0].time.getUTCFullYear().toString();
+        if (sv_fixing.length == 1) {
+            let year = sv_fixing[0].time.getUTCFullYear().toString();
             list.push({year: year,amount: k})
         }
-        for (let i = 1; i < er_service.length; i++) {
-            if (er_service[i].time.getUTCFullYear() - er_service[i-1].time.getUTCFullYear() == 0) k++; 
+        for (let i = 1; i < sv_fixing.length; i++) {
+            if (sv_fixing[i].time.getUTCFullYear() - sv_fixing[i-1].time.getUTCFullYear() == 0) k++; 
             else {
-                let year = er_service[i-1].time.getUTCFullYear().toString();
+                let year = sv_fixing[i-1].time.getUTCFullYear().toString();
                 list.push({year: year,amount: k});
                 k = 1;
             }
-            if (i == er_service.length - 1) {
-                let year = er_service[i].time.getUTCFullYear().toString();
+            if (i == sv_fixing.length - 1) {
+                let year = sv_fixing[i].time.getUTCFullYear().toString();
                 list.push({year: year,amount: k});
             }
         }

@@ -228,20 +228,29 @@ const getErrorOrOldProductNonConfirm = async (req,res) => {
 
     try {
         let list = new Array;
+        let listName = new Array;
         const er_back_factory = await erBackFactory.find({id_pr: req.query.id_user});
         const back_production = await backProduction.find({id_pr: req.query.id_user, status: "Chưa nhận"});
         for (let i = 0; i < er_back_factory.length; i++) {
             const bf = await product.findById(er_back_factory[i].id_product);
-            if (bf) list.push(bf);
+            if (bf) {
+                list.push(bf);
+                const service_name = await user.findById(er_back_factory[i].id_sv);
+                listName.push({name: service_name.name});
+            }
         }
         for (let i = 0; i < back_production.length; i++) {
             const bp = await product.findById(back_production[i].id_product)
-            if (bp) list.push(bp);
-            console.log(bp);
+            if (bp) {
+                list.push(bp);
+                const agent_name = await user.findById(back_production[i].id_ag);
+                listName.push({name: agent_name.name});
+            }
         }
         return res.json({
             success: 1,
-            list: list 
+            list: list,
+            listName: listName
         })
     } catch(error) {
         console.log(error);
@@ -411,7 +420,7 @@ const staticByMonthBackProduct = async(req,res) => {
         if (back_product.length == 1) {
             let month = (back_product[0].time.getUTCMonth() + 1).toString(); 
             let year = back_product[0].time.getUTCFullYear().toString();
-            list.push({month: month,quarter: quarter, year: year, amount: k});
+            list.push({month: month, year: year, amount: k});
         }
         for (let i = 1; i < back_product.length; i++) {
             if (back_product[i].time.getUTCMonth() - back_product[i-1].time.getUTCMonth() == 0) k++; 
@@ -517,6 +526,101 @@ const staticByYearBackProduct = async(req,res) => {
     }
 }
 
+// Số lượng sản phẩm lỗi theo đại lý
+const staticByAgentFail = async(req, res) => {
+    if (!req.query.id_user) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+
+    try {
+        const er_back_factory = await erBackFactory.find({id_pr: req.query.id_user});
+        const er_back_production = await erBackProduction.find({id_pr: req.query.id_user});
+
+        let agentId = new Array;
+        let amount = new Array;
+
+        for (var i = 0; i < er_back_factory.length; i++) {
+            if (agentId.length == 0) {
+                agentId.push(er_back_factory[i].id_ag);
+                amount.push(1);
+                continue;
+            }
+            const index = agentId.indexOf(er_back_factory[i].id_ag);
+            if (index == -1) {
+                agentId.push(er_back_factory[i].id_ag);
+                amount.push(1);
+            } else amount[index]++
+        }
+
+        for (var i = 0; i < er_back_production.length; i++) {
+            if (agentId.length == 0) {
+                agentId.push(er_back_production[i].id_ag);
+                amount.push(1);
+                continue;
+            }
+            const index = agentId.indexOf(er_back_production[i].id_ag);
+            if (index == -1) {
+                agentId.push(er_back_production[i].id_ag);
+                amount.push(1);
+            } else amount[index]++
+        }
+
+        let agentName = new Array;
+
+        for (var i = 0; i < agentId.length; i++) {
+            const agent = await user.findById(agentId[i]);
+            agentName.push(agent.name);
+        }
+
+        return res.json({
+            success: 1,
+            name: agentName,
+            amount: amount
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
+// Số lượng sản phẩm lỗi theo dòng sản phẩm
+const staticByProductLineFail = async(req, res) => {
+    if (!req.query.id_user) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+    
+    try {
+        const er_back_factory = await product.find({id_pr: req.query.id_user, status: 'er_back_factory'});
+        const er_back_production = await product.find({id_pr: req.query.id_user, status: 'er_back_production'});
+        const list = er_back_factory.concat(er_back_production);
+
+        let productLine = new Array;
+        let amount = new Array;
+
+        for (var i = 0; i < list.length; i++) {
+            if (productLine.length == 0) {
+                productLine.push(list[i].name + '\n' + list[i].capacity);
+                amount.push(1);
+                continue;
+            }
+            const index = productLine.indexOf(list[i].name + '\n' + list[i].capacity);
+            if (index == -1) {
+                productLine.push(list[i].name + '\n' + list[i].capacity);
+                amount.push(1);
+            } else amount[index]++
+        }
+
+        return res.json({
+            success: 1,
+            productLine: productLine,
+            amount: amount
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
 module.exports = {
     getNewProducts,
     getSendAgentProduct,
@@ -531,5 +635,7 @@ module.exports = {
     staticByYearBackProduct,
     staticByYearNewProduct,
     staticByQuarterBackProduct,
-    staticByQuarterNewProduct
+    staticByQuarterNewProduct,
+    staticByAgentFail,
+    staticByProductLineFail
 }

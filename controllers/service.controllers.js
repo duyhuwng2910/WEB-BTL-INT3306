@@ -18,8 +18,9 @@ const getAllFixingProduct = async (req,res) => {
         const fixing_product = await svFixing.find({id_sv: req.query.id_user});
         let list = new Array;
         for (let i = 0; i < fixing_product.length; i++) {
-            const _product = await product.findById(fixing_product[i].id_product);
-            list.push(_product);
+            //const _product = await product.findById(fixing_product[i].id_product);
+            const _product = await product.findOne({_id: fixing_product[i].id_product, status: 'sv_fixing'});
+            if (_product) list.push(_product);
         }
         
         return res.json({
@@ -51,7 +52,7 @@ const letBackProductToAgent = async (req,res) => {
             id_ag: fixed_product.id_ag,
             agent_status: "Chưa nhận"
         }).save();
-        await svFixing.deleteOne({id_product: req.body.id_product});
+       // await svFixing.deleteOne({id_product: req.body.id_product});
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
                 arr: {where: user_.name,time: Date.now(),status:"Đã sửa xong"}}
@@ -85,7 +86,7 @@ const letBackProductToFactory = async (req,res) => {
             id_sv: fail_product.id_sv
         }).save();
         const user_ = await user.findById(fail_product.id_sv);
-        await svFixing.deleteOne({id_product: fail_product._id});
+        //await svFixing.deleteOne({id_product: fail_product._id});
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
                 arr: {where: user_.name,time: Date.now(),status:"Lỗi cần trả về CSSX"}}
@@ -161,10 +162,16 @@ const getServiceProducts = async (req,res) => {
 
     try {
         const product_service = await product.find({id_sv: req.query.id_user, status:"er_service"});
+        let listAgentName = new Array;
+        for (let i = 0; i < product_service.length; i++) {
+            const agent_name = await user.findById(product_service[i].id_ag);
+            listAgentName.push({ag_name: agent_name.name});
+        }
 
         return res.json({
             success: 1,
-            list: product_service 
+            list: product_service,
+            listAgentName: listAgentName
         });
     } catch(error) {
         console.log(error);
@@ -217,7 +224,7 @@ const staticByMonthFixedProduct = async(req,res) => {
         if (fixed_product.length == 1) {
             let month = (fixed_product[0].time.getUTCMonth() + 1).toString(); 
             let year = fixed_product[0].time.getUTCFullYear().toString();
-            list.push({month: month,quater: quater, year: year, amount: k});
+            list.push({month: month, year: year, amount: k});
         }
         for (let i = 1; i < fixed_product.length; i++) {
             if (fixed_product[i].time.getUTCMonth() - fixed_product[i-1].time.getUTCMonth() == 0) k++; 
@@ -256,22 +263,22 @@ const staticByQuarterFixedProduct = async(req,res) => {
         let list = new Array;
         let k = 1;
         if (fixed_product.length == 1) {
-            let quater = sortTime(fixed_product[0].time.getUTCMonth() + 1); 
+            let quarter = sortTime(fixed_product[0].time.getUTCMonth() + 1); 
             let year = fixed_product[0].time.getUTCFullYear().toString();
-            list.push({quater: quater,year: year, amount: k});
+            list.push({quarter: quarter,year: year, amount: k});
         }
         for (let i = 1; i < fixed_product.length; i++) {
             if (fixed_product[i].time.getUTCMonth() - fixed_product[i-1].time.getUTCMonth() == 0) k++; 
             else {
-                let quater = sortTime(fixed_product[i-1].time.getUTCMonth() + 1); 
+                let quarter = sortTime(fixed_product[i-1].time.getUTCMonth() + 1); 
                 let year = fixed_product[i-1].time.getUTCFullYear().toString();
-                list.push({quater: quater,year: year, amount: k});
+                list.push({quarter: quarter,year: year, amount: k});
                 k = 1;
             }
             if (i == fixed_product.length - 1) {
-                let quater = sortTime(fixed_product[i].time.getUTCMonth() + 1); 
+                let quarter = sortTime(fixed_product[i].time.getUTCMonth() + 1); 
                 let year = fixed_product[i].time.getUTCFullYear().toString();
-                list.push({quater: quater,year: year, amount: k});
+                list.push({quarter: quarter,year: year, amount: k});
             }
         }
         return res.json({
@@ -323,6 +330,132 @@ const staticByYearFixedProduct = async(req,res) => {
     }
 }
 
+//Số lượng sản phẩm bảo hành không thành công trong mỗi tháng (của tất cả các năm) của 1 trung tâm bảo hành
+const staticByMonthFailProduct = async(req,res) => {
+    if (!req.query.id_user) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+  
+    try {
+        const fail1 = await erBackFactory.find({id_sv: req.query.id_user});
+        const fail2 = await erBackProduction.find({id_sv: req.query.id_user});
+        var fail = fail1.concat(fail2);
+        fail.sort(sortFunction);
+        let list = new Array;
+        let k = 1;
+        if (fail.length == 1) {
+            let month = (fail[0].time.getUTCMonth() + 1).toString(); 
+            let year = fail[0].time.getUTCFullYear().toString();
+            list.push({month: month, year: year, amount: k});
+        }
+        for (let i = 1; i < fail.length; i++) {
+            if (fail[i].time.getUTCMonth() - fail[i-1].time.getUTCMonth() == 0) k++; 
+            else {
+                let month = (fail[i-1].time.getUTCMonth() + 1).toString(); 
+                let year = fail[i-1].time.getUTCFullYear().toString();
+                list.push({month: month,year: year, amount: k});
+                k = 1;
+            }
+            if (i == fail.length - 1) {
+                let month = (fail[i].time.getUTCMonth() + 1).toString(); 
+                let year = fail[i].time.getUTCFullYear().toString();
+                list.push({month: month,year: year, amount: k});
+            }
+        }
+        return res.json({
+            success: 1,
+            list: list
+        });
+  
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
+//Số lượng sản phẩm bảo hành không thành công trong mỗi quý (của tất cả các năm) của 1 trung tâm bảo hành
+const staticByQuarterFailProduct = async(req,res) => {
+    if (!req.query.id_user) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+  
+    try {
+        const fail1 = await erBackFactory.find({id_sv: req.query.id_user});
+        const fail2 = await erBackProduction.find({id_sv: req.query.id_user});
+        var fail = fail1.concat(fail2);
+        fail.sort(sortFunction);
+        let list = new Array;
+        let k = 1;
+        if (fail.length == 1) {
+            let quarter = sortTime(fail[0].time.getUTCMonth() + 1); 
+            let year = fail[0].time.getUTCFullYear().toString();
+            list.push({quarter: quarter,year: year, amount: k});
+        }
+        for (let i = 1; i < fail.length; i++) {
+            if (fail[i].time.getUTCMonth() - fail[i-1].time.getUTCMonth() == 0) k++; 
+            else {
+                let quarter = sortTime(fail[i-1].time.getUTCMonth() + 1); 
+                let year = fail[i-1].time.getUTCFullYear().toString();
+                list.push({quarter: quarter,year: year, amount: k});
+                k = 1;
+            }
+            if (i == fail.length - 1) {
+                let quarter = sortTime(fail[i].time.getUTCMonth() + 1); 
+                let year = fail[i].time.getUTCFullYear().toString();
+                list.push({quarter: quarter,year: year, amount: k});
+            }
+        }
+        return res.json({
+            success: 1,
+            list: list
+        });
+  
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
+//Số lượng sản phẩm bảo hành không thành công trong mỗi năm của 1 trung tâm bảo hành
+const staticByYearFailProduct = async(req,res) => {
+    if (!req.query.id_user) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+    }
+  
+    try {
+        const fail1 = await erBackFactory.find({id_sv: req.query.id_user});
+        const fail2 = await erBackProduction.find({id_sv: req.query.id_user});
+        var fail = fail1.concat(fail2);
+        fail.sort(sortFunction);
+        let list = new Array;
+        let k = 1;
+        if (fail.length == 1) {
+            let year = fail[0].time.getUTCFullYear().toString();
+            list.push({year: year,amount: k})
+        }
+        for (let i = 1; i < fail.length; i++) {
+            if (fail[i].time.getUTCFullYear() - fail[i-1].time.getUTCFullYear() == 0) k++; 
+            else {
+                let year = fail[i-1].time.getUTCFullYear().toString();
+                list.push({year: year,amount: k});
+                k = 1;
+            }
+            if (i == fail.length - 1) {
+                let year = fail[i].time.getUTCFullYear().toString();
+                list.push({year: year,amount: k});
+            }
+        }
+        return res.json({
+            success: 1,
+            list: list
+        });
+    
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
 module.exports = {
     getAllFixingProduct,
     getFixedProducts,
@@ -333,5 +466,8 @@ module.exports = {
     getServiceProducts,
     staticByMonthFixedProduct,
     staticByYearFixedProduct,
-    staticByQuarterFixedProduct
+    staticByQuarterFixedProduct,
+    staticByMonthFailProduct,
+    staticByQuarterFailProduct,
+    staticByYearFailProduct
 }

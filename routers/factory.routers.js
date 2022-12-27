@@ -15,6 +15,8 @@ router.get('/list_year_backproduction', factory.staticByYearBackProduct);
 router.get('/list_month_newproduct', factory.staticByMonthNewProduct);
 router.get('/list_quarter_newproduct', factory.staticByQuarterNewProduct);  
 router.get('/list_year_newproduct', factory.staticByYearNewProduct);
+router.get('/list_agent_fail', factory.staticByAgentFail);
+router.get('/list_productline_fail', factory.staticByProductLineFail);
 router.get('/list_error_or_old_ic', factory.getErrorOrOldProductIsConfirm);
 router.get('/list_error_or_old_nc', factory.getErrorOrOldProductNonConfirm);
 
