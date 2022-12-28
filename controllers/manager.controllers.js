@@ -81,23 +81,11 @@ const getPortFolioProduct = async (req, res) => {
 
 //Theo dõi và xem thống kê sản phẩm trên toàn quốc, theo trạng thái và theo cơ sở sản xuất, đại lý phân phối và trung tâm bảo hành.
 const staticAllProduct = async (req, res) => {
-    if (!req.query.id_user) {
+    if (!req.query.id_user || !req.query.namespace) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     await listProduct.deleteMany({});
-    await new listProduct({
-        namespace:"Cơ sở sản xuất",
-        arr: []
-    }).save();
-    await new listProduct({
-        namespace:"Đại lý phân phối",
-        arr: []
-    }).save();
-    await new listProduct({
-        namespace:"Trung tâm bảo hành",
-        arr: []
-    }).save();
 
     try {
         const manager = await user.findById(req.query.id_user);
@@ -105,41 +93,29 @@ const staticAllProduct = async (req, res) => {
             console.log({manager: manager});
             return res.status(UNAUTHORIZED).json({ success: 0, errorMessage: "Bạn không có quyền truy cập" });
         }
-        const products = await product.find({});
+        const products = await product.find({namespace: req.query.namespace});
+        let namespace_ = req.query.namespace;
         for (let i = 0; i < products.length; i++) {
             const product_ = await listProduct.findOne({name: products[i].name});
+            let id_ = products[i].id_pr;
+            if (req.query.namespace == "Đại lý phân phối") id_ = products[i].id_ag;
+            if (req.query.namespace == "Trung tâm bảo hành") id_ = products[i].id_sv;
+            const user_ = await user.findById(id_);
             const h = await historicMove.findOne({id_product: products[i]._id});
-            if (!product_) {
+            const pd1 = await listProduct.findOne({name: products[i].name, where: user_.name} );
+            const pd2 = await listProduct.findOne({name: products[i].name, where: user_.name, status: h.arr[h.arr.length - 1].status });
+            if (!product_ || !pd1 || !pd2) {
                 await new listProduct({
+                    namespace: namespace_,
                     name: products[i].name,
-                    namespace: h.arr[arr.length - 1].where,
-                    status: h.arr[arr.length - 1].status,
-                    any: 1
+                    where: user_.name,
+                    status: h.arr[h.arr.length - 1].status,
+                    amount: 1 
                 }).save();
             } else {
-                const pd1 = await listProduct.findOne({name: products[i].name, namespace: h.arr[arr.length - 1].where })
-                if (!pd1) {
-                    await new listProduct({
-                        name: products[i].name,
-                        namespace: h.arr[arr.length - 1].where,
-                        status: h.arr[arr.length - 1].status,
-                        any: 1
-                    }).save();
-                } else {
-                    const pd2 = await listProduct.findOne({name: products[i].name, namespace: h.arr[arr.length - 1].where, status: h.arr[arr.length - 1].status })
-                    if (!pd2) {
-                        await new listProduct({
-                            name: products[i].name,
-                            namespace: h.arr[arr.length - 1].where,
-                            status: h.arr[arr.length - 1].status,
-                            any: 1
-                        }).save();
-                    } else {
-                        await listProduct.findOneAndUpdate({name: products[i].name, namespace: h.arr[arr.length - 1].where, status: h.arr[arr.length - 1].status },{ $inc : { any : 1 } });
-                    } 
-                }
-            }
-        }
+                await listProduct.findOneAndUpdate({name: products[i].name, where: user_.name, status: h.arr[h.arr.length - 1].status },{ $inc : { any : 1 } });
+            } 
+        }            
         return res.json({
             success: 1,
             listProduct: await listProduct.find({})

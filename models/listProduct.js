@@ -3,12 +3,11 @@ const { Schema } = mongoose;
 
 const listproductSchema = new Schema({
     namespace: String,
-    arr: [{
-        amount: Number,
-        name: String,
-        status: String,
-        where: String
-    }]
+    amount: Number,
+    name: String,
+    status: String,
+    where: String
+    
 })
 
 const listProduct = mongoose.model('listproduct', listproductSchema);
