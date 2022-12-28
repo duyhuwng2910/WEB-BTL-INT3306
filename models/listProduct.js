@@ -2,9 +2,13 @@ const mongoose = require('./database');
 const { Schema } = mongoose;
 
 const listproductSchema = new Schema({
-    name: String,
-    any: Number,
-    namespace: String
+    namespace: String,
+    arr: [{
+        amount: Number,
+        name: String,
+        status: String,
+        where: String
+    }]
 })
 
 const listProduct = mongoose.model('listproduct', listproductSchema);
