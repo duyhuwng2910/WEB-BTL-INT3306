@@ -292,7 +292,7 @@ const infoProduct = async (req,res) => {
         
         const sold_ = await sold.findOne({id_product: product_._id});
         if (sold_) {
-            if (checkOverTimeService(sold_,product_)) {
+            if (checkOverTimeService(sold_,product_) == 1) {
                 await product.findByIdAndUpdate({_id: product_._id}, {st_Service: "Hết bảo hành"});
             }   
         }    

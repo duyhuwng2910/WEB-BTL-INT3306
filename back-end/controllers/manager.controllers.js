@@ -81,25 +81,25 @@ const getPortFolioProduct = async (req, res) => {
 
 //Theo dõi và xem thống kê sản phẩm trên toàn quốc, theo trạng thái và theo cơ sở sản xuất, đại lý phân phối và trung tâm bảo hành.
 const staticAllProduct = async (req, res) => {
-    if (!req.query.id_user || !req.query.namespace) {
+    if (!req.body.id_user || !req.body.namespace) {
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
 
     await listProduct.deleteMany({});
 
     try {
-        const manager = await user.findById(req.query.id_user);
+        const manager = await user.findById(req.body.id_user);
         if (manager.type_user != "mg"){
             console.log({manager: manager});
             return res.status(UNAUTHORIZED).json({ success: 0, errorMessage: "Bạn không có quyền truy cập" });
         }
-        const products = await product.find({namespace: req.query.namespace});
-        let namespace_ = req.query.namespace;
+        const products = await product.find({namespace: req.body.namespace});
+        let namespace_ = req.body.namespace;
         for (let i = 0; i < products.length; i++) {
             const product_ = await listProduct.findOne({name: products[i].name});
             let id_ = products[i].id_pr;
-            if (req.query.namespace == "Đại lý phân phối") id_ = products[i].id_ag;
-            if (req.query.namespace == "Trung tâm bảo hành") id_ = products[i].id_sv;
+            if (req.body.namespace == "Đại lý phân phối") id_ = products[i].id_ag;
+            if (req.body.namespace == "Trung tâm bảo hành") id_ = products[i].id_sv;
             const user_ = await user.findById(id_);
             const h = await historicMove.findOne({id_product: products[i]._id});
             const pd1 = await listProduct.findOne({name: products[i].name, where: user_.name} );

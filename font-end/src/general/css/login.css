@@ -1,0 +1,101 @@
+/* ------------------------------------------Form login---------------------------------------------------- */
+.login {
+    width: 40%;
+    margin-left: 30%;
+    margin-top: 15%;
+    /* display: flex; */
+}
+
+/*hidden input xác định account type*/
+/* .login > div:nth-child(1) > input {
+    display: none;
+} */
+
+/*flex con của form*/
+/* .login > div:nth-child(1) {
+    flex: 1;
+    order: 2;
+    background-color: #39f;
+    border-radius: 10px;
+    box-shadow: 0 1px 1px 0 rgba(var(--cui-elevation-base-color,60,75,100),.14),0 2px 1px -1px 
+        rgba(var(--cui-elevation-base-color,60,75,100),.12),0 1px 3px 0 rgba(var(--cui-elevation-base-color,60,75,100),.2);
+} */
+
+.login > div:nth-child(1) {
+    /* flex: 1;
+    order: 1; */
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 1px 1px 0 rgba(var(--cui-elevation-base-color,60,75,100),.14),0 2px 1px -1px 
+        rgba(var(--cui-elevation-base-color,60,75,100),.12),0 1px 3px 0 rgba(var(--cui-elevation-base-color,60,75,100),.2);
+}
+
+/*các input của div chứa <input> username, password*/
+.login > div:nth-child(2) > input {
+    display: block;
+}
+
+/*Độ rộng, margin của all input và h1 trong form*/
+.login input, .login h1 {
+    width: 80%;
+    margin-left: 10%;
+    margin-bottom: 20px;
+}
+
+/*2 <input> username và password*/
+.login [name="password"], .login [name="userName"], .login [id="email"], .login [id="otp"], .login [id="password"], .login [id="repassword"] {
+    padding: 6px 12px;
+    border: 1px solid grey;
+    border-radius: 5px;
+}
+
+#root > form:nth-child(n + 2) {
+    display: none;
+}
+
+/*<input> nút nhấn đăng nhập*/
+.login [type="submit"] {
+    width: 30%;
+    padding: 6px 12px;
+    border-radius: 10px;
+    background-color: #39f;
+    border: 1px;
+    cursor: pointer;
+}
+
+/*các <li> để user click chọn account type*/
+/* .login li {
+    padding-top: 30px;
+    padding-bottom: 30px;
+    padding-left: 10%;
+    cursor: pointer;
+    list-style-type: none;
+    border-radius: 10px;
+} */
+
+/*Mặc định khởi tạo <li> đầu tiên màu trắng*/
+/* .login > div > li:nth-child(2) {
+    background-color: white;
+} */
+
+.login a {
+    display: block;
+    margin-left: 10%;
+}
+
+/*screen nhỏ hơn 900px thì chuyển all object trong form thành block*/
+/* @media (max-width: 900px) {
+    .login {
+        display: block;
+    }
+} */
+
+/*Lỗi trong class login*/
+.errLogin {
+    color: red;
+    display: block;
+    margin-left: 10%;
+    margin-bottom: 10px;
+    margin-top: -10px;
+}

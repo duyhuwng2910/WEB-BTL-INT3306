@@ -15,13 +15,7 @@ const getAllFixingProduct = async (req,res) => {
     }
     
     try {
-        const fixing_product = await svFixing.find({id_sv: req.query.id_user});
-        let list = new Array;
-        for (let i = 0; i < fixing_product.length; i++) {
-            //const _product = await product.findById(fixing_product[i].id_product);
-            const _product = await product.findOne({_id: fixing_product[i].id_product, status: 'sv_fixing'});
-            if (_product) list.push(_product);
-        }
+        let list = await product.find({id_sv: req.query.id_user, status: 'sv_fixing'})
         
         return res.json({
           success: 1,
@@ -52,7 +46,6 @@ const letBackProductToAgent = async (req,res) => {
             id_ag: fixed_product.id_ag,
             agent_status: "Chưa nhận"
         }).save();
-       // await svFixing.deleteOne({id_product: req.body.id_product});
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
                 arr: {where: user_.name,time: Date.now(),status:"Đã sửa xong"}}
@@ -86,7 +79,6 @@ const letBackProductToFactory = async (req,res) => {
             id_sv: fail_product.id_sv
         }).save();
         const user_ = await user.findById(fail_product.id_sv);
-        //await svFixing.deleteOne({id_product: fail_product._id});
         await historicMove.updateOne({id_product: req.body.id_product}, 
             {$push : {
                 arr: {where: user_.name,time: Date.now(),status:"Lỗi cần trả về CSSX"}}
@@ -101,7 +93,7 @@ const letBackProductToFactory = async (req,res) => {
     }
 }
 
-//Lấy ra tất cả sản phẩm đã sửa chữa xong của 1 trung tâm bảo hành mà chưa trả về đại lý **********
+//Lấy ra tất cả sản phẩm đã sửa chữa xong của 1 trung tâm bảo hành **********
 const getFixedProducts = async (req,res) => {
     if (!req.query.id_user) {
         return res.status(BAD_REQUEST).json({ success: 0 });
@@ -110,14 +102,22 @@ const getFixedProducts = async (req,res) => {
     try {
         const fixed_product = await svFixed.find({id_sv: req.query.id_user});
         let list = new Array;
+        let agName = new Array;
+        let status = new Array;
         for (let i = 0; i < fixed_product.length; i++) {
             const _product = await product.findById(fixed_product[i].id_product);
             list.push(_product);
+            if (fixed_product[i].agent_status == 'Đã nhận') status.push('Đã nhận');
+            else status.push('Chưa nhận');
+            const agent = await user.findById(_product.id_ag);
+            agName.push(agent.name);
         }
 
         return res.json({
             success: 1,
-            list: list
+            list: list,
+            agName: agName,
+            status: status
         });
     
     } catch (error) {
@@ -133,20 +133,34 @@ const getErrorProducts = async (req,res) => {
     }
 
     try {
+        let prName = new Array;
+        let status = new Array;
         let list = new Array;
         const er_back_factory = await erBackFactory.find({id_sv: req.query.id_user});
         const er_back_production = await erBackProduction.find({id_sv: req.query.id_user});
         for (let i = 0; i < er_back_factory.length; i++) {
             const bf = await product.findById(er_back_factory[i].id_product)
-            if (bf) list.push(bf);
+            if (bf) {
+                const producer = await user.findById(er_back_factory[i].id_pr);
+                prName.push(producer.name);
+                status.push('Chưa nhận');
+                list.push(bf);
+            }
         }
         for (let i = 0; i < er_back_production.length; i++) {
             const bp = await product.findById(er_back_production[i].id_product)
-            if (bp) list.push(bp);
+            if (bp) {
+                const producer = await user.findById(er_back_production[i].id_pr);
+                prName.push(producer.name);
+                status.push('Đã nhận');
+                list.push(bp);
+            }
         }
         return res.json({
             success: 1,
-            list: list 
+            list: list,
+            prName: prName,
+            status: status
         })
     } catch(error) {
         console.log(error);

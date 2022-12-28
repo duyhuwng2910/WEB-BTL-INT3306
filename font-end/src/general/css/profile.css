@@ -1,0 +1,154 @@
+/*------------------------------Profile and InforAccount-------------------------------------*/
+
+.profile {
+    padding: 10px;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.profile > h1 {
+    text-align: center;
+}
+
+/*all input, textarea in form profile*/
+.profile input, .profile textarea {
+    box-shadow: 0 1px 1px 0 rgba(var(--cui-elevation-base-color,60,75,100),.14),0 2px 1px -1px 
+        rgba(var(--cui-elevation-base-color,60,75,100),.12),0 1px 3px 0 rgba(var(--cui-elevation-base-color,60,75,100),.2);
+    margin-bottom: 20px;
+    border-radius: 5px;
+    width: 40%;
+    display: inline-block;
+    padding: 6px 12px;
+    border: hidden;
+}
+
+/*all label in form profile*/
+.profile label {
+    margin-left: 20%;
+    width: 20%;
+    float: left;
+    margin-bottom: 5px;
+}
+
+/*ngắt trôi khi hết 1 line*/
+.profile br {
+    clear: both;
+}
+
+/*nút submit in profile*/
+.profile > input[type = 'submit'] {
+    width: 20%;
+    margin-left: 40%;
+    background-color: #3399ff;
+    border-radius: 10px;
+    border: 1px;
+    cursor: pointer;
+}
+
+main > form:nth-child(n + 2) {
+    display: none;
+}
+
+/*Tổ tiên để xác định độ dời nút back*/
+main {
+    position: relative;
+}
+
+/*nút back*/
+.fa-arrow-circle-left {
+    font-size: 30px;
+    color: black;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+}
+
+/*Lỗi trong class profile*/
+.errProfile {
+    display: block;
+    color: red;
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+/*Nút edit trong class profile*/
+.fa-edit {
+    font-size: 15px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+/*screen nhỏ hơn 900 thì all object in profile thành block*/
+@media (max-width: 900px) {
+    .profile input, .profile textarea {
+        display: inline-block;
+        margin-left: 30%;
+    }
+
+    .profile label {
+        float: none;
+        display: block;
+        margin-left: 30%;
+    }
+
+    .fa-arrow-circle-left {
+        font-size: 15px;
+    }
+}
+
+/*-----------------2 input reset và submit trong form của InforAccount----------------------*/
+/*div chứa 2 nút con là submit, reset kiểu flex*/
+.button-reset-and-submit {
+    display: flex;
+    width: 40%;
+    margin-left: 30%;
+}
+
+/*both input*/
+.button-reset-and-submit > input {
+    background-color: #3399ff;
+    border-radius: 10px;
+    border: 1px;
+    cursor: pointer;
+}
+
+/*flex item: input resetreset*/
+.button-reset-and-submit > input:first-child {
+    flex: 1;
+    margin-right: 5px;
+}
+
+/*flex item: input submit*/
+.button-reset-and-submit > input:last-child {
+    flex: 1;
+    margin-left: 5px;
+}
+
+@media (max-width: 900px) {
+    /*screen nhỏ hơn 900 thì reser, submit thành block*/
+    .button-reset-and-submit {
+        display: block;
+    }
+
+    /*screen nhỏ hơn 900 thì reset, submit nhỏ hơn, marginLeft cũng nhỏ hơn*/
+    .button-reset-and-submit > input:nth-child(n) {
+        margin-right: 0;
+        width: 50%;
+        margin-left: 25%;
+    }
+}
+
+/*Form trong Details có thêm con là table (table này đã đc css từ .tableProductLine) => Css thêm*/
+.profile > .tableProductLine {
+    width: 50%;
+}
+
+@media (max-width: 900px) {
+    .profile > .tableProductLine {
+        margin-left: 25%;
+        display: block;
+    }
+}

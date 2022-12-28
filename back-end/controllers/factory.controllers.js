@@ -17,12 +17,7 @@ const getNewProducts = async (req,res) => {
       }
     
     try {
-        const new_product = await newProduct.find({id_user: req.query.id_user});
-        let list = new Array;
-        for (let i = 0; i < new_product.length; i++) {
-            const _product = await product.findOne({_id: new_product[i].id_product, status: 'new_product'});
-            if (_product) list.push(_product);
-        }
+        let list = await product.find({id_pr: req.query.id_user, status: 'new_product'});
         
         return res.json({
           success: 1,
@@ -56,7 +51,6 @@ const sendProductToAgent = async (req,res) => {
                 agent_status: "Chưa nhận"
             }).save();
             const user_ = await user.findById(agent_product.id_pr);
-            //await newProduct.deleteOne({id_product: req.body.id_product});
             await historicMove.updateOne({id_product: req.body.id_product}, 
                 {$push : {
                     arr: {where: user_.name,time: Date.now(),status:"Xuất cho đại lý"}}
@@ -158,7 +152,8 @@ const getSendAgentProduct = async (req,res) => {
         
         return res.json({
           success: 1,
-          list: list
+          list: list,
+          status: send_product
         });
     
     } catch (error) {
@@ -265,17 +260,14 @@ const getErrorOrOldProductIsConfirm = async (req,res) => {
     }
 
     try {
-        let list = new Array;
-        const er_back_production = await erBackProduction.find({id_pr: req.query.id_user});
+        let list1 = new Array;
+        const er_back_production = await product.find({id_pr: req.query.id_user, status: 'er_back_production'})
         const back_production = await backProduction.find({id_pr: req.query.id_user, status: "Đã nhận"});
-        for (let i = 0; i < er_back_production.length; i++) {
-            const ebp = await product.findById(er_back_production[i].id_product);
-            if (ebp) list.push(ebp);
-        }
         for (let i = 0; i < back_production.length; i++) {
             const bp = await product.findById(back_production[i].id_product);
-            if (bp) list.push(bp);
+            list1.push(bp);
         }
+        let list = er_back_production.concat(list1);
         return res.json({
             success: 1,
             list: list 

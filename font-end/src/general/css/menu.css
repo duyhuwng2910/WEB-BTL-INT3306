@@ -1,0 +1,76 @@
+/* ----------------------------------------------Menu bar------------------------------------ */
+/*menu*/
+#menu {
+    position: fixed;
+    top: 67.6px;
+    left: 0;
+    height: 100%;
+    width: 256px;
+    background-color: white;
+    margin: 0;
+    padding: 0;
+    color: grey;
+    box-shadow: 0 1px 1px 0 rgba(var(--cui-elevation-base-color,60,75,100),.14),0 2px 1px -1px 
+        rgba(var(--cui-elevation-base-color,60,75,100),.12),0 1px 3px 0 rgba(var(--cui-elevation-base-color,60,75,100),.2);
+    overflow-y: auto;
+}
+
+.divMenu > h1 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
+    width: 226px;
+    padding: 15px;
+    background-color: #321fdb;
+    color: white;
+}
+
+#menu li {
+    list-style-type: none;
+    padding: 20px;
+    cursor: pointer;
+}
+
+/*all mục phân cấp thứ 2 in menu*/
+#menu > li > ul > li:nth-child(n) {
+    padding-left: 0;
+}
+
+#menu > li > ul > li:first-child {
+    padding-top: 40px;
+}
+
+#menu > li > ul > li:last-child {
+    padding-bottom: 0;
+}
+
+/*các <li> có con thì all con sẽ hidden*/
+#menu > li > ul {
+    display: none;
+}
+
+a {
+    color: grey;
+    text-decoration: none;
+}
+
+/*icon khi menu turn on*/
+.fa-angle-double-left {
+    position: fixed;
+    left: 232px;
+    top: 0;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+}
+
+/*icon khi menu turn off*/
+.fa-angle-double-right {
+    position: fixed;
+    left: 0;
+    top: 0;
+    font-size: 24px;
+    color: grey;
+    cursor: pointer;
+}

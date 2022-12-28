@@ -26,7 +26,7 @@ const getNewProductIsConfirm = async (req,res) => {
         let list = new Array;
         for (let i = 0; i < agent_product.length; i++) {
             const _product = await product.findOne({_id: agent_product[i].id_product, status: "back_agent"});
-            list.push(_product);
+            if (_product) list.push(_product);
         }
 
         return res.json({
@@ -105,29 +105,21 @@ const listSold = async (req,res) => {
     }
 
     try {
-        let list = new Array;
-        const product_sold = await sold.find({id_user: req.query.id_user});
-        const product_return = await svReturn.find({id_user: req.query.id_user});
+        const product_sold = await product.find({id_ag: req.query.id_user, status: "sold"});
+        const product_return = await product.find({id_ag: req.query.id_user, status: "sv_return"});
         for (let i = 0; i < product_sold.length; i++) {
-            const ps = await product.findOne({_id:product_sold[i].id_product, status: "sold"});
-            if (ps) {
-                const sold_ = await sold.findOne({id_product: ps._id});
-                if (checkOverTimeService(sold_,ps)) {
-                    await product.findByIdAndUpdate({_id: ps._id}, {st_Service: "Hết bảo hành"});
-                }
-                list.push(ps);
+            const sold_ = await sold.findOne({id_product: product_sold[i]._id});
+            if (checkOverTimeService(sold_,product_sold[i]) == 1) {
+                await product.findByIdAndUpdate({_id: product_sold[i]._id}, {st_Service: "Hết bảo hành"});
             }
         }
         for (let i = 0; i < product_return.length; i++) {
-            const psr = await product.findOne({_id:product_return[i].id_product, status: "sv_return"});
-            if (psr) {
-                const sold_ = await sold.findOne({id_product: psr._id});
-                if (checkOverTimeService(sold_,psr)) {
-                    await product.findByIdAndUpdate({_id: psr._id}, {st_Service: "Hết bảo hành"});
-                }
-                list.push(psr);
+            const sold_ = await sold.findOne({id_product: product_return[i]._id});
+            if (checkOverTimeService(sold_,product_return[i]) == 1) {
+                await product.findByIdAndUpdate({_id: product_return[i]._id}, {st_Service: "Hết bảo hành"});
             }
         }
+        let list = product_sold.concat(product_return);
         return res.json({
             success: 1,
             list: list 
@@ -237,12 +229,7 @@ const getReCallingProduct = async (req,res) => {
     }
 
     try {
-        const recallProduct = await erRecall.find({id_user: req.query.id_user});
-        let list = new Array;
-        for (let i = 0; i < recallProduct.length; i++) {
-            const _product = await product.findOne({_id: recallProduct[i].id_product, status: "er_recall"});
-            list.push(_product);
-        }
+        const list = await product.find({ig_ag: req.query.id_user, status: "er_recall"});
         return res.json({
             success: 1,
             list: list
@@ -298,21 +285,9 @@ const listServiceProduct = async (req,res) => {
     }
 
     try {
-        let list = new Array;
-        // const er_service = await erService.find({id_user: req.query.id_user});
-        // const sv_fixing = await svFixing.find({id_user: req.query.id_user});
-        // for (let i = 0; i < er_service.length; i++) {
-        //     const es = await product.findOne({_id: er_service[i].id_product})
-        //     if (es) list.push(es);
-        // }
-        // for (let i = 0; i < sv_fixing.length; i++) {
-        //     const sf = await product.findOne({_id: sv_fixing[i].id_product})
-        //     if (sf) list.push(sf);
-        // }
         const er_service = await product.find({id_ag: req.query.id_user, status: 'er_service'})
-        for (let i = 0; i < er_service.length; i++) list.push(er_service[i]);
         const sv_fixing = await product.find({id_ag: req.query.id_user, status: 'sv_fixing'})
-        for (let i = 0; i < er_service.length; i++) list.push(sv_fixing[i]);
+        let list = er_service.concat(sv_fixing);
         const sv_fixed = await svFixed.find({id_ag: req.query.id_user, agent_status: 'chưa nhận'});
         for (let i = 0; i < sv_fixed.length; i++) {
             const _product = await product.findOne({_id: sv_fixed[i].id_product});
@@ -387,12 +362,7 @@ const getBackProduction = async (req,res) => {
     }
 
     try {
-        const product_backproduction = await backProduction.find({id_ag: req.query.id_user});
-        let list = new Array;
-        for (let i = 0; i < product_backproduction.length; i++) {
-            const _product = await product.findById(product_backproduction[i].id_product);
-            list.push(_product);
-        }
+        let list = await product.find({id_ag: req.query.id_user, status: 'back_production'})
 
         return res.json({
             success: 1,
@@ -514,17 +484,9 @@ const getErrorProducts = async (req,res) => {
     }
 
     try {
-        let list = new Array;
-        const er_back_factory = await erBackFactory.find({id_ag: req.query.id_user});
-        const er_back_production = await erBackProduction.find({id_ag: req.query.id_user});
-        for (let i = 0; i < er_back_factory.length; i++) {
-            const bf = await product.findById(er_back_factory[i].id_product);
-            if (bf) list.push(bf);
-        }
-        for (let i = 0; i < er_back_production.length; i++) {
-            const bp = await product.findById(er_back_production[i].id_product);
-            if (bp) list.push(bp);
-        }
+        const er_back_factory = await product.find({id_ag: req.query.id_user, status: 'er_back_factory'});
+        const er_back_production = await product.find({id_ag: req.query.id_user, status: 'er_back_production'});
+        let list = er_back_factory.concat(er_back_production);
         return res.json({
             success: 1,
             list: list 
