@@ -79,7 +79,7 @@ const entryBatchProduct = async (req,res) => {
       }
     
     try {
-        const user_ = user.findById(req.body.id_user);
+        const user_ = await user.findById(req.body.id_user);
         let k = req.body.amount;
         for (let i = 0; i < k; i++) {
             const new_product = await new product({
