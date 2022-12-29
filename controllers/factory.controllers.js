@@ -336,17 +336,22 @@ const staticByQuarterNewProduct = async(req,res) => {
             list.push({quarter: quarter,year: year, amount: k});
         }
         for (let i = 1; i < new_product.length; i++) {
-            if (new_product[i].time.getUTCMonth() - new_product[i-1].time.getUTCMonth() == 0) k++; 
-            else {
-                let quarter = sortTime(new_product[i-1].time.getUTCMonth() + 1); 
-                let year = new_product[i-1].time.getUTCFullYear().toString();
-                list.push({quarter: quarter,year: year, amount: k});
+            let year = new_product[i - 1].time.getUTCFullYear();
+            let quarter = sortTime(new_product[i-1].time.getUTCMonth() + 1);
+            if (year == new_product[i].time.getUTCFullYear()) {
+                if (quarter == sortTime(new_product[i].time.getUTCMonth() + 1)) k++;
+                else {
+                    list.push({quarter: quarter, year: year.toString(), amount: k});
+                    k = 1;
+                }
+            } else {
+                list.push({quarter: quarter, year: year.toString(), amount: k});
                 k = 1;
             }
-            if (i == new_product.length - 1) {
-                let quarter = sortTime(new_product[i].time.getUTCMonth() + 1).toString(); 
-                let year = new_product[i].time.getUTCFullYear().toString();
-                list.push({quarter: quarter,year: year, amount: k});
+            if ( i == new_product.length - 1) {
+                let lastQuarter = sortTime(new_product[i].time.getUTCMonth() + 1);
+                let lastYear = new_product[i].time.getUTCFullYear().toString();
+                list.push({quarter: lastQuarter, year: lastYear, amount: k});
             }
         }
         return res.json({
@@ -456,17 +461,22 @@ const staticByQuarterBackProduct = async(req,res) => {
             list.push({quarter: quarter,year: year, amount: k});
         }
         for (let i = 1; i < back_product.length; i++) {
-            if (back_product[i].time.getUTCMonth() - back_product[i-1].time.getUTCMonth() == 0) k++; 
-            else {
-                let quarter = sortTime(back_product[i-1].time.getUTCMonth() + 1); 
-                let year = back_product[i-1].time.getUTCFullYear().toString();
-                list.push({quarter: quarter,year: year, amount: k});
+            let year = back_product[i - 1].time.getUTCFullYear();
+            let quarter = sortTime(back_product[i-1].time.getUTCMonth() + 1);
+            if (year == back_product[i].time.getUTCFullYear()) {
+                if (quarter == sortTime(back_product[i].time.getUTCMonth() + 1)) k++;
+                else {
+                    list.push({quarter: quarter, year: year.toString(), amount: k});
+                    k = 1;
+                }
+            } else {
+                list.push({quarter: quarter, year: year.toString(), amount: k});
                 k = 1;
             }
-            if (i == back_product.length - 1) {
-                let quarter = sortTime(back_product[i].time.getUTCMonth() + 1); 
-                let year = back_product[i].time.getUTCFullYear().toString();
-                list.push({quarter: quarter,year: year, amount: k});
+            if ( i == back_product.length - 1) {
+                let lastQuarter = sortTime(back_product[i].time.getUTCMonth() + 1);
+                let lastYear = back_product[i].time.getUTCFullYear().toString();
+                list.push({quarter: lastQuarter, year: lastYear, amount: k});
             }
         }
         return res.json({
