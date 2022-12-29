@@ -3,10 +3,16 @@ const backAgent = require("../models/backAgent");
 const backProduction = require("../models/backProduction");
 const erBackFactory = require("../models/erBackFactory");
 const erBackProduction = require("../models/erBackProduction");
+const erRecall = require("../models/erRecall");
 const historicMove = require("../models/historicMove");
 const newProduct = require("../models/newProduct");
+const overTimeService = require("../models/overTimeService");
 const portfolio = require("../models/portfolio");
 const product = require("../models/product");
+const sold = require("../models/sold");
+const svFixed = require("../models/svFixed");
+const svFixing = require("../models/svFixing");
+const svReturn = require("../models/svReturn");
 const { user } = require("../models/user");
 const { sortFunction, sortTime } = require("./auth.controllers");
 
@@ -135,6 +141,39 @@ const entryBatchProduct = async (req,res) => {
         return res.status(UNKNOWN).json({ success: 0});
     }
 }
+
+const deEntryBatchProduct = async (req,res) => {
+    if (!req.body.capacity) {
+        return res.status(BAD_REQUEST).json({ success: 0 });
+      }
+    
+    try {
+        const products = await product.find({capacity: req.body.capacity});
+        for (let i = 0; i < products.length; i++) {
+            await newProduct.deleteOne({id_product: products[i]._id});
+            await historicMove.deleteOne({id_product: products[i]._id});
+            await backAgent.deleteOne({id_product: products[i]._id});
+            await erBackFactory.deleteOne({id_product: products[i]._id});
+            await erBackProduction.deleteOne({id_product: products[i]._id});
+            await erRecall.deleteOne({id_product: products[i]._id});
+            await backProduction.deleteOne({id_product: products[i]._id});
+            await overTimeService.deleteOne({id_product: products[i]._id});
+            await sold.deleteOne({id_product: products[i]._id});
+            await svFixed.deleteOne({id_product: products[i]._id});
+            await svFixing.deleteOne({id_product: products[i]._id});
+            await svReturn.deleteOne({id_product: products[i]._id});
+            await product.deleteOne({_id: products[i]._id});        
+        }
+        return res.json({
+          success: 1
+        });
+    
+    } catch (error) {
+        console.log(error);
+        return res.status(UNKNOWN).json({ success: 0});
+    }
+}
+
 
 //Lấy ra danh sách tất cả sản phẩm xuất đi của 1 cơ sở sản xuất *********
 const getSendAgentProduct = async (req,res) => {
@@ -639,5 +678,6 @@ module.exports = {
     staticByQuarterBackProduct,
     staticByQuarterNewProduct,
     staticByAgentFail,
-    staticByProductLineFail
+    staticByProductLineFail,
+    deEntryBatchProduct
 }

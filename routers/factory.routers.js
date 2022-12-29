@@ -6,6 +6,7 @@ router.post('/entry_product', factory.entryBatchProduct); //
 router.post('/send_product_to_agent', factory.sendProductToAgent);
 router.post('/take_old_product', factory.takeOldProduct);
 router.post('/take_err_product', factory.takeErrorProduct);
+router.post('/de_entry', factory.deEntryBatchProduct);
 
 router.get('/list_product_to_agent', factory.getSendAgentProduct);
 router.get('/list_new_product', factory.getNewProducts);
