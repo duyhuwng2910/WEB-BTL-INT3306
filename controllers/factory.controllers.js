@@ -142,38 +142,6 @@ const entryBatchProduct = async (req,res) => {
     }
 }
 
-const deEntryBatchProduct = async (req,res) => {
-    if (!req.body.capacity) {
-        return res.status(BAD_REQUEST).json({ success: 0 });
-      }
-    
-    try {
-        const products = await product.find({capacity: req.body.capacity});
-        for (let i = 0; i < products.length; i++) {
-            await newProduct.deleteOne({id_product: products[i]._id});
-            await historicMove.deleteOne({id_product: products[i]._id});
-            await backAgent.deleteOne({id_product: products[i]._id});
-            await erBackFactory.deleteOne({id_product: products[i]._id});
-            await erBackProduction.deleteOne({id_product: products[i]._id});
-            await erRecall.deleteOne({id_product: products[i]._id});
-            await backProduction.deleteOne({id_product: products[i]._id});
-            await overTimeService.deleteOne({id_product: products[i]._id});
-            await sold.deleteOne({id_product: products[i]._id});
-            await svFixed.deleteOne({id_product: products[i]._id});
-            await svFixing.deleteOne({id_product: products[i]._id});
-            await svReturn.deleteOne({id_product: products[i]._id});
-            await product.deleteOne({_id: products[i]._id});        
-        }
-        return res.json({
-          success: 1
-        });
-    
-    } catch (error) {
-        console.log(error);
-        return res.status(UNKNOWN).json({ success: 0});
-    }
-}
-
 
 //Lấy ra danh sách tất cả sản phẩm xuất đi của 1 cơ sở sản xuất *********
 const getSendAgentProduct = async (req,res) => {
@@ -678,6 +646,5 @@ module.exports = {
     staticByQuarterBackProduct,
     staticByQuarterNewProduct,
     staticByAgentFail,
-    staticByProductLineFail,
-    deEntryBatchProduct
+    staticByProductLineFail
 }

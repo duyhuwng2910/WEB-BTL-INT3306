@@ -167,6 +167,7 @@ const forgetPassword = async (req,res) => {
 //Xác nhận quên mật khẩu ******************************
 const checkPasswordRecovery = async (req, res) => {
     if (!req.query.otp) {
+        console.log(req.query.otp);
         return res.status(BAD_REQUEST).json({ success: 0 });
     }
   
